@@ -1,0 +1,39 @@
+﻿.firm-sidebar {
+    background-color: #198754;
+}
+
+@media (min-width: 768px) {
+    .firm-sidebar {
+        min-height: 100vh;
+    }
+}
+
+.firm-sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+    .firm-sidebar .nav-link:hover,
+    .firm-sidebar .nav-link:focus-visible {
+        color: #fff;
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .firm-sidebar .nav-link.active {
+        color: #198754;
+        background-color: #fff;
+        font-weight: 600;
+    }
+
+.firm-sidebar a:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+/* Stop iPhone Safari zooming in when you tap a form field */
+@media (max-width: 768px) {
+    input, textarea, select {
+        font-size: 16px !important;
+    }
+}

@@ -1,0 +1,59 @@
+﻿@{
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Centre - GSTFiling</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/firm.css" asp-append-version="true" />
+</head>
+<body class="bg-light">
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-3 col-lg-2 firm-sidebar p-3" aria-label="Centre menu">
+                <a class="d-block text-white text-decoration-none fs-5 fw-bold mb-4" asp-controller="Firm" asp-action="Dashboard">
+                    <i class="bi bi-building" aria-hidden="true"></i> GST Centre
+                </a>
+                <div class="nav flex-md-column gap-1">
+                    <a class="nav-link @(action == "Dashboard" ? "active" : "")" asp-controller="Firm" asp-action="Dashboard">
+                        <i class="bi bi-speedometer2" aria-hidden="true"></i> Dashboard
+                    </a>
+                    <a class="nav-link @(action == "Shops" ? "active" : "")" asp-controller="Firm" asp-action="Shops">
+                        <i class="bi bi-shop" aria-hidden="true"></i> Shops
+                    </a>
+                    <a class="nav-link @(action == "Consultants" ? "active" : "")" asp-controller="Firm" asp-action="Consultants">
+                        <i class="bi bi-people" aria-hidden="true"></i> Consultants
+                    </a>
+                </div>
+            </nav>
+
+            <main class="col-md-9 col-lg-10 p-3 p-md-4">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
