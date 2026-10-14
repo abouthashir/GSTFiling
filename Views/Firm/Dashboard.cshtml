@@ -1,6 +1,53 @@
-﻿@{
+﻿@model FirmDashboardViewModel
+@{
     ViewData["Title"] = "Dashboard";
 }
 
-<h1 class="h3 fw-bold text-success">Welcome back, Centre Admin</h1>
-<p class="text-muted">Manage your shops and consultants from here.</p>
+<h1 class="h3 fw-bold text-success mb-1">Welcome back, @Model.CentreName</h1>
+<p class="text-muted mb-4">Here is a quick summary of your centre.</p>
+
+<div class="row g-3">
+    <div class="col-12 col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1"><i class="bi bi-shop" aria-hidden="true"></i> Shops</p>
+                <p class="display-6 fw-bold mb-3">@Model.ShopCount</p>
+                <a class="btn btn-success btn-sm" asp-action="Shops">Manage shops</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1"><i class="bi bi-people" aria-hidden="true"></i> Consultants</p>
+                <p class="display-6 fw-bold mb-3">@Model.ConsultantCount</p>
+                <a class="btn btn-outline-success btn-sm" asp-action="Consultants">Manage consultants</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <div class="card shadow-sm h-100 @(Model.UnassignedShopCount > 0 ? "border-warning" : "")">
+            <div class="card-body">
+                <p class="text-muted mb-1"><i class="bi bi-person-exclamation" aria-hidden="true"></i> Shops without consultant</p>
+                <p class="display-6 fw-bold mb-3">@Model.UnassignedShopCount</p>
+                @if (Model.UnassignedShopCount > 0)
+                {
+                    <p class="small text-muted mb-0">Assign a consultant to these shops.</p>
+                }
+                else
+                {
+                    <p class="small text-success mb-0"><i class="bi bi-check-circle" aria-hidden="true"></i> Every shop has a consultant.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.ShopCount == 0 && Model.ConsultantCount == 0)
+{
+    <div class="alert alert-info mt-4" role="status">
+        You have no consultants or shops yet. Start by adding a consultant, then add shops and assign them.
+    </div>
+}
