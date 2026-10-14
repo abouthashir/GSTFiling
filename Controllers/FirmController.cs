@@ -1,5 +1,7 @@
 ﻿using GSTFiling.Data;
+using GSTFiling.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace GSTFiling.Controllers
 {
@@ -19,9 +21,25 @@ namespace GSTFiling.Controllers
             return 1;
         }
 
-        public IActionResult Dashboard()
+        public async Task<IActionResult> Dashboard()
         {
-            return View();
+            int centreId = GetCurrentCentreId();
+
+            var centre = await _db.Centres.FirstOrDefaultAsync(c => c.Id == centreId);
+            if (centre == null)
+            {
+                return NotFound();
+            }
+
+            var model = new FirmDashboardViewModel
+            {
+                CentreName = centre.Name ?? "Centre",
+                ShopCount = await _db.Customers.CountAsync(s => s.CentreId == centreId),
+                ConsultantCount = await _db.Consultants.CountAsync(c => c.CentreId == centreId),
+                UnassignedShopCount = await _db.Customers.CountAsync(s => s.CentreId == centreId && s.ConsultantId == null)
+            };
+
+            return View(model);
         }
     }
 }
