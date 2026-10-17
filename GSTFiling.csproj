@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <Folder Include="Services\" />
-    <Folder Include="Views\Auth\" />
     <Folder Include="Views\Consultant\" />
     <Folder Include="Views\Admin\" />
     <Folder Include="Views\Shop\" />

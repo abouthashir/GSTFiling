@@ -29,8 +29,5 @@ namespace GSTFiling.Models
         public DateTime? UpdatedAt { get; set; }
 
         public int? ConsultantId { get; set; }
-
-        [MaxLength(255)]
-        public string Password { get; set; } = string.Empty;
     }
 }

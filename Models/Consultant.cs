@@ -13,9 +13,6 @@ namespace GSTFiling.Models
         [MaxLength(150)]
         public string? Email { get; set; }
 
-        [MaxLength(255)]
-        public string Password { get; set; } = string.Empty;
-
         [MaxLength(50)]
         public string? MobileNumber { get; set; }
 
