@@ -1,10 +1,14 @@
-﻿using GSTFiling.Data;
+﻿using System.Security.Claims;
+using GSTFiling.Data;
+using GSTFiling.Models;
 using GSTFiling.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace GSTFiling.Controllers
 {
+    [Authorize(Roles = Role.Centre)]
     public class FirmController : Controller
     {
         private readonly AppDbContext _db;
@@ -14,11 +18,10 @@ namespace GSTFiling.Controllers
             _db = db;
         }
 
-        // Temporary: until login exists, we act as Centre 1 (Kochi Centre).
-        // When login is added, ONLY this method changes.
+        // The logged-in Centre user's CentreId, saved in their login cookie at login.
         private int GetCurrentCentreId()
         {
-            return 1;
+            return int.Parse(User.FindFirstValue("CentreId")!);
         }
 
         public async Task<IActionResult> Dashboard()

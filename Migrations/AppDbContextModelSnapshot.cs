@@ -137,11 +137,6 @@ namespace GSTFiling.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -182,11 +177,6 @@ namespace GSTFiling.Migrations
                     b.Property<string>("Name")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("ShopName")
                         .HasMaxLength(200)
@@ -315,6 +305,9 @@ namespace GSTFiling.Migrations
                     b.Property<int?>("CentreId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ConsultantId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Email")
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
@@ -329,6 +322,9 @@ namespace GSTFiling.Migrations
                     b.Property<int?>("RoleId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ShopId")
+                        .HasColumnType("int");
+
                     b.Property<string>("UpdatedAt")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -338,6 +334,10 @@ namespace GSTFiling.Migrations
                         .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
 
                     b.ToTable("Users");
                 });
