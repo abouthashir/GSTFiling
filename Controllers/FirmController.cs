@@ -56,5 +56,90 @@ namespace GSTFiling.Controllers
 
             return View(consultants);
         }
+
+        [HttpGet]
+        public IActionResult AddConsultant()
+        {
+            return View(new ConsultantFormViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddConsultant(ConsultantFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var email = model.Email.Trim().ToLower();
+
+            if (await EmailIsTakenAsync(email))
+            {
+                ModelState.AddModelError(nameof(model.Email), "This email is already used by another account.");
+                return View(model);
+            }
+
+            int centreId = GetCurrentCentreId();
+
+            var consultant = new Consultant
+            {
+                Name = model.Name.Trim(),
+                Email = email,
+                MobileNumber = model.MobileNumber,
+                Address = model.Address?.Trim(),
+                IsActive = true,
+                CentreId = centreId,
+                UpdatedAt = DateTime.Now
+            };
+
+            try
+            {
+                await CreateConsultantWithLoginAsync(consultant, model.Password, centreId);
+            }
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError(nameof(model.Email), "This email is already used by another account.");
+                return View(model);
+            }
+
+            TempData["Success"] = $"{consultant.Name} was added. They can log in with {email}.";
+            return RedirectToAction(nameof(Consultants));
+        }
+
+        // ---------- Helpers ----------
+
+        private async Task<bool> EmailIsTakenAsync(string email)
+        {
+            return await _db.Users.AnyAsync(u => u.Email != null && u.Email.ToLower() == email);
+        }
+
+        private async Task CreateConsultantWithLoginAsync(Consultant consultant, string password, int centreId)
+        {
+            int consultantRoleId = await _db.Roles
+                .Where(r => r.Name == Role.Consultant)
+                .Select(r => r.Id)
+                .FirstAsync();
+
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+
+            _db.Consultants.Add(consultant);
+            await _db.SaveChangesAsync();
+
+            _db.Users.Add(new User
+            {
+                UserName = consultant.Name,
+                Email = consultant.Email,
+                Password = password,
+                RoleId = consultantRoleId,
+                IsActive = true,
+                CentreId = centreId,
+                ConsultantId = consultant.Id,
+                UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+            });
+            await _db.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        }
     }
 }

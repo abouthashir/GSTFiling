@@ -25,7 +25,7 @@
                     <a class="nav-link @(action == "Shops" ? "active" : "")" asp-controller="Firm" asp-action="Shops">
                         <i class="bi bi-shop" aria-hidden="true"></i> Shops
                     </a>
-                    <a class="nav-link @(action == "Consultants" ? "active" : "")" asp-controller="Firm" asp-action="Consultants">
+                    <a class="nav-link @(action != null && action.Contains("Consultant") ? "active" : "")" asp-controller="Firm" asp-action="Consultants">
                         <i class="bi bi-people" aria-hidden="true"></i> Consultants
                     </a>
                 </div>
