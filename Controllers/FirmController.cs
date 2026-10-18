@@ -44,5 +44,17 @@ namespace GSTFiling.Controllers
 
             return View(model);
         }
+
+        public async Task<IActionResult> Consultants()
+        {
+            int centreId = GetCurrentCentreId();
+
+            var consultants = await _db.Consultants
+                .Where(c => c.CentreId == centreId)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
+            return View(consultants);
+        }
     }
 }
