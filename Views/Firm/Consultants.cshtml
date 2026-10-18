@@ -34,6 +34,7 @@ else
                         <th scope="col">Email</th>
                         <th scope="col">Mobile</th>
                         <th scope="col">Status</th>
+                        <th scope="col" class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -52,6 +53,12 @@ else
                                 {
                                     <span class="badge text-bg-secondary">Inactive</span>
                                 }
+                            </td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-success" asp-action="EditConsultant" asp-route-id="@consultant.Id"
+                                   aria-label="Edit @consultant.Name">
+                                    <i class="bi bi-pencil" aria-hidden="true"></i> Edit
+                                </a>
                             </td>
                         </tr>
                     }

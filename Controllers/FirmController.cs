@@ -107,11 +107,106 @@ namespace GSTFiling.Controllers
             return RedirectToAction(nameof(Consultants));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> EditConsultant(int id)
+        {
+            int centreId = GetCurrentCentreId();
+
+            var consultant = await _db.Consultants
+                .FirstOrDefaultAsync(c => c.Id == id && c.CentreId == centreId);
+
+            if (consultant == null)
+            {
+                return NotFound();
+            }
+
+            var model = new EditConsultantViewModel
+            {
+                Id = consultant.Id,
+                Name = consultant.Name ?? string.Empty,
+                Email = consultant.Email ?? string.Empty,
+                MobileNumber = consultant.MobileNumber ?? string.Empty,
+                Address = consultant.Address,
+                IsActive = consultant.IsActive
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditConsultant(EditConsultantViewModel model)
+        {
+            int centreId = GetCurrentCentreId();
+
+            var consultant = await _db.Consultants
+                .FirstOrDefaultAsync(c => c.Id == model.Id && c.CentreId == centreId);
+
+            if (consultant == null)
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var email = model.Email.Trim().ToLower();
+
+            var login = await _db.Users
+                .FirstOrDefaultAsync(u => u.ConsultantId == consultant.Id);
+
+            if (await EmailIsTakenAsync(email, login?.Id))
+            {
+                ModelState.AddModelError(nameof(model.Email), "This email is already used by another account.");
+                return View(model);
+            }
+
+            // 1. The details row
+            consultant.Name = model.Name.Trim();
+            consultant.Email = email;
+            consultant.MobileNumber = model.MobileNumber;
+            consultant.Address = model.Address?.Trim();
+            consultant.IsActive = model.IsActive;
+            consultant.UpdatedAt = DateTime.Now;
+
+            // 2. The login row
+            if (login != null)
+            {
+                login.UserName = consultant.Name;
+                login.Email = email;
+                login.IsActive = model.IsActive;
+                login.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+                if (!string.IsNullOrEmpty(model.NewPassword))
+                {
+                    login.Password = model.NewPassword;
+                }
+            }
+
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError(nameof(model.Email), "This email is already used by another account.");
+                return View(model);
+            }
+
+            TempData["Success"] = $"{consultant.Name} was updated.";
+            return RedirectToAction(nameof(Consultants));
+        }
+
         // ---------- Helpers ----------
 
-        private async Task<bool> EmailIsTakenAsync(string email)
+        private async Task<bool> EmailIsTakenAsync(string email, int? exceptUserId = null)
         {
-            return await _db.Users.AnyAsync(u => u.Email != null && u.Email.ToLower() == email);
+            return await _db.Users.AnyAsync(u =>
+                u.Email != null &&
+                u.Email.ToLower() == email &&
+                u.Id != exceptUserId);
         }
 
         private async Task CreateConsultantWithLoginAsync(Consultant consultant, string password, int centreId)
