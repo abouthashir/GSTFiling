@@ -54,11 +54,20 @@ else
                                     <span class="badge text-bg-secondary">Inactive</span>
                                 }
                             </td>
-                            <td class="text-end">
-                                <a class="btn btn-sm btn-outline-success" asp-action="EditConsultant" asp-route-id="@consultant.Id"
-                                   aria-label="Edit @consultant.Name">
-                                    <i class="bi bi-pencil" aria-hidden="true"></i> Edit
-                                </a>
+                                                        <td class="text-end">
+                                <div class="d-inline-flex gap-2">
+                                    <a class="btn btn-sm btn-outline-success" asp-action="EditConsultant" asp-route-id="@consultant.Id"
+                                       aria-label="Edit @consultant.Name">
+                                        <i class="bi bi-pencil" aria-hidden="true"></i> Edit
+                                    </a>
+                                    <form method="post" asp-action="DeleteConsultant" asp-route-id="@consultant.Id"
+                                          data-confirm="Delete @consultant.Name? Their shops will stay, but without a consultant."
+                                          onsubmit="return confirm(this.dataset.confirm);">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Delete @consultant.Name">
+                                            <i class="bi bi-trash" aria-hidden="true"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     }

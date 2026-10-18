@@ -199,6 +199,45 @@ namespace GSTFiling.Controllers
             return RedirectToAction(nameof(Consultants));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConsultant(int id)
+        {
+            int centreId = GetCurrentCentreId();
+
+            var consultant = await _db.Consultants
+                .FirstOrDefaultAsync(c => c.Id == id && c.CentreId == centreId);
+
+            if (consultant == null)
+            {
+                return NotFound();
+            }
+
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+
+            // 1. Keep their shops, but take the consultant off them
+            int unassignedShops = await _db.Customers
+                .Where(s => s.ConsultantId == consultant.Id && s.CentreId == centreId)
+                .ExecuteUpdateAsync(s => s.SetProperty(x => x.ConsultantId, (int?)null));
+
+            // 2. Delete their login
+            await _db.Users
+                .Where(u => u.ConsultantId == consultant.Id)
+                .ExecuteDeleteAsync();
+
+            // 3. Delete the consultant
+            _db.Consultants.Remove(consultant);
+            await _db.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+
+            TempData["Success"] = unassignedShops > 0
+                ? $"{consultant.Name} was deleted. {unassignedShops} shop(s) now need a new consultant."
+                : $"{consultant.Name} was deleted.";
+
+            return RedirectToAction(nameof(Consultants));
+        }
+
         // ---------- Helpers ----------
 
         private async Task<bool> EmailIsTakenAsync(string email, int? exceptUserId = null)
