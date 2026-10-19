@@ -238,6 +238,54 @@ namespace GSTFiling.Controllers
             return RedirectToAction(nameof(Consultants));
         }
 
+        public async Task<IActionResult> Shops(string? filter)
+        {
+            int centreId = GetCurrentCentreId();
+
+            // Only accept the 3 known filter values
+            filter = filter?.ToLower() switch
+            {
+                "assigned" => "assigned",
+                "unassigned" => "unassigned",
+                _ => "all"
+            };
+
+            // LEFT JOIN: every shop of this centre + its consultant's name (if any)
+            var query =
+                from s in _db.Customers
+                where s.CentreId == centreId
+                join c in _db.Consultants on s.ConsultantId equals (int?)c.Id into consultantGroup
+                from c in consultantGroup.DefaultIfEmpty()
+                select new ShopListItemViewModel
+                {
+                    Id = s.Id,
+                    ShopName = s.ShopName ?? string.Empty,
+                    OwnerName = s.Name,
+                    GstNumber = s.GstNumber,
+                    MobileNumber = s.MobileNumber,
+                    Email = s.Email,
+                    ConsultantId = s.ConsultantId,
+                    ConsultantName = c != null ? c.Name : null
+                };
+
+            if (filter == "assigned")
+            {
+                query = query.Where(x => x.ConsultantId != null);
+            }
+            else if (filter == "unassigned")
+            {
+                query = query.Where(x => x.ConsultantId == null);
+            }
+
+            var model = new ShopsPageViewModel
+            {
+                Shops = await query.OrderBy(x => x.ShopName).ToListAsync(),
+                Filter = filter
+            };
+
+            return View(model);
+        }
+
         // ---------- Helpers ----------
 
         private async Task<bool> EmailIsTakenAsync(string email, int? exceptUserId = null)

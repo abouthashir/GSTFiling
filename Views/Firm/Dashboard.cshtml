@@ -34,7 +34,7 @@
                 <p class="display-6 fw-bold mb-3">@Model.UnassignedShopCount</p>
                 @if (Model.UnassignedShopCount > 0)
                 {
-                    <p class="small text-muted mb-0">Assign a consultant to these shops.</p>
+                     <a class="btn btn-warning btn-sm" asp-action="Shops" asp-route-filter="unassigned">View these shops</a>
                 }
                 else
                 {
