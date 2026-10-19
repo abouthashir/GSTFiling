@@ -1,0 +1,74 @@
+﻿@model EditConsultantViewModel
+@{
+    ViewData["Title"] = "Edit consultant";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Consultants">Consultants</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit consultant</li>
+    </ol>
+</nav>
+
+<h1 class="h3 fw-bold text-success mb-4">Edit consultant</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body p-4">
+        <form method="post" asp-action="EditConsultant">
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" autocomplete="off" />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label asp-for="MobileNumber" class="form-label"></label>
+                    <input asp-for="MobileNumber" class="form-control" inputmode="numeric" maxlength="10" autocomplete="off" />
+                    <span asp-validation-for="MobileNumber" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" autocomplete="off" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label asp-for="NewPassword" class="form-label"></label>
+                    <input asp-for="NewPassword" class="form-control" autocomplete="new-password" />
+                    <div class="form-text">Leave empty to keep the current password.</div>
+                    <span asp-validation-for="NewPassword" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Address" class="form-label"></label>
+                    <textarea asp-for="Address" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="Address" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input asp-for="IsActive" class="form-check-input" role="switch" />
+                        <label asp-for="IsActive" class="form-check-label"></label>
+                    </div>
+                    <div class="form-text">Inactive consultants cannot log in.</div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-lg" aria-hidden="true"></i> Save changes
+                </button>
+                <a class="btn btn-outline-secondary" asp-action="Consultants">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
