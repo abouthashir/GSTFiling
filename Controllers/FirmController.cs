@@ -5,6 +5,7 @@ using GSTFiling.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace GSTFiling.Controllers
 {
@@ -286,6 +287,73 @@ namespace GSTFiling.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> AddShop()
+        {
+            var model = new ShopFormViewModel
+            {
+                ConsultantOptions = await GetConsultantOptionsAsync(GetCurrentCentreId())
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddShop(ShopFormViewModel model)
+        {
+            int centreId = GetCurrentCentreId();
+
+            // The chosen consultant must be one of MY active consultants
+            if (model.ConsultantId != null &&
+                !await IsMyActiveConsultantAsync(model.ConsultantId.Value, centreId))
+            {
+                ModelState.AddModelError(nameof(model.ConsultantId), "Choose a consultant from the list.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.ConsultantOptions = await GetConsultantOptionsAsync(centreId);
+                return View(model);
+            }
+
+            var email = model.Email.Trim().ToLower();
+
+            if (await EmailIsTakenAsync(email))
+            {
+                ModelState.AddModelError(nameof(model.Email), "This email is already used by another account.");
+                model.ConsultantOptions = await GetConsultantOptionsAsync(centreId);
+                return View(model);
+            }
+
+            var shop = new Customer
+            {
+                ShopName = model.ShopName.Trim(),
+                Name = model.OwnerName.Trim(),
+                GstNumber = model.GstNumber.Trim().ToUpper(),
+                Email = email,
+                MobileNumber = model.MobileNumber,
+                Address = model.Address?.Trim(),
+                CentreId = centreId,
+                ConsultantId = model.ConsultantId,
+                UpdatedAt = DateTime.Now
+            };
+
+            try
+            {
+                await CreateShopWithLoginAsync(shop, model.Password, centreId);
+            }
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError(nameof(model.Email), "This email is already used by another account.");
+                model.ConsultantOptions = await GetConsultantOptionsAsync(centreId);
+                return View(model);
+            }
+
+            TempData["Success"] = $"{shop.ShopName} was added. They can log in with {email}.";
+            return RedirectToAction(nameof(Shops));
+        }
+
         // ---------- Helpers ----------
 
         private async Task<bool> EmailIsTakenAsync(string email, int? exceptUserId = null)
@@ -317,6 +385,56 @@ namespace GSTFiling.Controllers
                 IsActive = true,
                 CentreId = centreId,
                 ConsultantId = consultant.Id,
+                UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+            });
+            await _db.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        }
+
+        // Dropdown choices: this centre's ACTIVE consultants, A-Z
+        private async Task<List<SelectListItem>> GetConsultantOptionsAsync(int centreId)
+        {
+            return await _db.Consultants
+                .Where(c => c.CentreId == centreId && c.IsActive)
+                .OrderBy(c => c.Name)
+                .Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name
+                })
+                .ToListAsync();
+        }
+
+        private async Task<bool> IsMyActiveConsultantAsync(int consultantId, int centreId)
+        {
+            return await _db.Consultants.AnyAsync(c =>
+                c.Id == consultantId &&
+                c.CentreId == centreId &&
+                c.IsActive);
+        }
+
+        private async Task CreateShopWithLoginAsync(Customer shop, string password, int centreId)
+        {
+            int shopRoleId = await _db.Roles
+                .Where(r => r.Name == Role.Shop)
+                .Select(r => r.Id)
+                .FirstAsync();
+
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+
+            _db.Customers.Add(shop);
+            await _db.SaveChangesAsync();
+
+            _db.Users.Add(new User
+            {
+                UserName = shop.ShopName,
+                Email = shop.Email,
+                Password = password,
+                RoleId = shopRoleId,
+                IsActive = true,
+                CentreId = centreId,
+                ShopId = shop.Id,
                 UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
             });
             await _db.SaveChangesAsync();
