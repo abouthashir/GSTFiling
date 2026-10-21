@@ -354,6 +354,114 @@ namespace GSTFiling.Controllers
             return RedirectToAction(nameof(Shops));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> EditShop(int id)
+        {
+            int centreId = GetCurrentCentreId();
+
+            var shop = await _db.Customers
+                .FirstOrDefaultAsync(s => s.Id == id && s.CentreId == centreId);
+
+            if (shop == null)
+            {
+                return NotFound();
+            }
+
+            var model = new EditShopViewModel
+            {
+                Id = shop.Id,
+                ShopName = shop.ShopName ?? string.Empty,
+                OwnerName = shop.Name ?? string.Empty,
+                GstNumber = shop.GstNumber ?? string.Empty,
+                MobileNumber = shop.MobileNumber ?? string.Empty,
+                Email = shop.Email ?? string.Empty,
+                Address = shop.Address,
+                ConsultantId = shop.ConsultantId,
+                ConsultantOptions = await GetConsultantOptionsAsync(centreId, shop.ConsultantId)
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditShop(EditShopViewModel model)
+        {
+            int centreId = GetCurrentCentreId();
+
+            var shop = await _db.Customers
+                .FirstOrDefaultAsync(s => s.Id == model.Id && s.CentreId == centreId);
+
+            if (shop == null)
+            {
+                return NotFound();
+            }
+
+            // Keeping the same consultant is always fine.
+            // Changing to another one: it must be MY active consultant.
+            if (model.ConsultantId != null &&
+                model.ConsultantId != shop.ConsultantId &&
+                !await IsMyActiveConsultantAsync(model.ConsultantId.Value, centreId))
+            {
+                ModelState.AddModelError(nameof(model.ConsultantId), "Choose a consultant from the list.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.ConsultantOptions = await GetConsultantOptionsAsync(centreId, shop.ConsultantId);
+                return View(model);
+            }
+
+            var email = model.Email.Trim().ToLower();
+
+            var login = await _db.Users
+                .FirstOrDefaultAsync(u => u.ShopId == shop.Id);
+
+            if (await EmailIsTakenAsync(email, login?.Id))
+            {
+                ModelState.AddModelError(nameof(model.Email), "This email is already used by another account.");
+                model.ConsultantOptions = await GetConsultantOptionsAsync(centreId, shop.ConsultantId);
+                return View(model);
+            }
+
+            // 1. The shop row
+            shop.ShopName = model.ShopName.Trim();
+            shop.Name = model.OwnerName.Trim();
+            shop.GstNumber = model.GstNumber.Trim().ToUpper();
+            shop.MobileNumber = model.MobileNumber;
+            shop.Email = email;
+            shop.Address = model.Address?.Trim();
+            shop.ConsultantId = model.ConsultantId;
+            shop.UpdatedAt = DateTime.Now;
+
+            // 2. The login row
+            if (login != null)
+            {
+                login.UserName = shop.ShopName;
+                login.Email = email;
+                login.UpdatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+                if (!string.IsNullOrEmpty(model.NewPassword))
+                {
+                    login.Password = model.NewPassword;
+                }
+            }
+
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError(nameof(model.Email), "This email is already used by another account.");
+                model.ConsultantOptions = await GetConsultantOptionsAsync(centreId, shop.ConsultantId);
+                return View(model);
+            }
+
+            TempData["Success"] = $"{shop.ShopName} was updated.";
+            return RedirectToAction(nameof(Shops));
+        }
+
         // ---------- Helpers ----------
 
         private async Task<bool> EmailIsTakenAsync(string email, int? exceptUserId = null)
@@ -392,16 +500,17 @@ namespace GSTFiling.Controllers
             await transaction.CommitAsync();
         }
 
-        // Dropdown choices: this centre's ACTIVE consultants, A-Z
-        private async Task<List<SelectListItem>> GetConsultantOptionsAsync(int centreId)
+        // Dropdown choices: this centre's ACTIVE consultants, A-Z.
+        // keepConsultantId: also show this one even if inactive (the shop's current consultant).
+        private async Task<List<SelectListItem>> GetConsultantOptionsAsync(int centreId, int? keepConsultantId = null)
         {
             return await _db.Consultants
-                .Where(c => c.CentreId == centreId && c.IsActive)
+                .Where(c => c.CentreId == centreId && (c.IsActive || c.Id == keepConsultantId))
                 .OrderBy(c => c.Name)
                 .Select(c => new SelectListItem
                 {
                     Value = c.Id.ToString(),
-                    Text = c.Name
+                    Text = c.IsActive ? c.Name : c.Name + " (inactive)"
                 })
                 .ToListAsync();
         }
