@@ -281,7 +281,8 @@ namespace GSTFiling.Controllers
             var model = new ShopsPageViewModel
             {
                 Shops = await query.OrderBy(x => x.ShopName).ToListAsync(),
-                Filter = filter
+                Filter = filter,
+                ConsultantOptions = await GetConsultantOptionsAsync(centreId)
             };
 
             return View(model);
@@ -459,6 +460,85 @@ namespace GSTFiling.Controllers
             }
 
             TempData["Success"] = $"{shop.ShopName} was updated.";
+            return RedirectToAction(nameof(Shops));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignConsultant(int shopId, int? consultantId, string? returnFilter)
+        {
+            int centreId = GetCurrentCentreId();
+
+            var shop = await _db.Customers
+                .FirstOrDefaultAsync(s => s.Id == shopId && s.CentreId == centreId);
+
+            if (shop == null)
+            {
+                return NotFound();
+            }
+
+            // Nothing changed: just go back
+            if (consultantId == shop.ConsultantId)
+            {
+                return RedirectToAction(nameof(Shops), new { filter = returnFilter });
+            }
+
+            // A new consultant must be one of MY active consultants
+            if (consultantId != null && !await IsMyActiveConsultantAsync(consultantId.Value, centreId))
+            {
+                TempData["Error"] = "Choose an active consultant from your centre.";
+                return RedirectToAction(nameof(Shops), new { filter = returnFilter });
+            }
+
+            shop.ConsultantId = consultantId;
+            shop.UpdatedAt = DateTime.Now;
+            await _db.SaveChangesAsync();
+
+            if (consultantId == null)
+            {
+                TempData["Success"] = $"{shop.ShopName} is now not assigned.";
+            }
+            else
+            {
+                var consultantName = await _db.Consultants
+                    .Where(c => c.Id == consultantId)
+                    .Select(c => c.Name)
+                    .FirstOrDefaultAsync();
+
+                TempData["Success"] = $"{shop.ShopName} is now assigned to {consultantName}.";
+            }
+
+            return RedirectToAction(nameof(Shops), new { filter = returnFilter });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteShop(int id)
+        {
+            int centreId = GetCurrentCentreId();
+
+            var shop = await _db.Customers
+                .FirstOrDefaultAsync(s => s.Id == id && s.CentreId == centreId);
+
+            if (shop == null)
+            {
+                return NotFound();
+            }
+
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+
+            // 1. Delete the shop's login
+            await _db.Users
+                .Where(u => u.ShopId == shop.Id)
+                .ExecuteDeleteAsync();
+
+            // 2. Delete the shop
+            _db.Customers.Remove(shop);
+            await _db.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+
+            TempData["Success"] = $"{shop.ShopName} and its login were deleted.";
             return RedirectToAction(nameof(Shops));
         }
 
