@@ -22,7 +22,7 @@
                     <a class="nav-link @(action == "Dashboard" ? "active" : "")" asp-controller="Firm" asp-action="Dashboard">
                         <i class="bi bi-speedometer2" aria-hidden="true"></i> Dashboard
                     </a>
-                    <a class="nav-link @(action == "Shops" ? "active" : "")" asp-controller="Firm" asp-action="Shops">
+                    <a class="nav-link @(action != null && action.Contains("Shop") ? "active" : "")" asp-controller="Firm" asp-action="Shops">
                         <i class="bi bi-shop" aria-hidden="true"></i> Shops
                     </a>
                     <a class="nav-link @(action != null && action.Contains("Consultant") ? "active" : "")" asp-controller="Firm" asp-action="Consultants">

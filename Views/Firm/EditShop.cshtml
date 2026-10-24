@@ -1,0 +1,94 @@
+﻿@model EditShopViewModel
+@{
+    ViewData["Title"] = "Edit shop";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Shops">Shops</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit shop</li>
+    </ol>
+</nav>
+
+<h1 class="h3 fw-bold text-success mb-4">Edit shop</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body p-4">
+        <form method="post" asp-action="EditShop">
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+            <h2 class="h6 text-muted text-uppercase mb-3">Shop details</h2>
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label asp-for="ShopName" class="form-label"></label>
+                    <input asp-for="ShopName" class="form-control" autocomplete="off" />
+                    <span asp-validation-for="ShopName" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label asp-for="GstNumber" class="form-label"></label>
+                    <input asp-for="GstNumber" class="form-control text-uppercase" maxlength="15" autocomplete="off" />
+                    <span asp-validation-for="GstNumber" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label asp-for="OwnerName" class="form-label"></label>
+                    <input asp-for="OwnerName" class="form-control" autocomplete="off" />
+                    <span asp-validation-for="OwnerName" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label asp-for="MobileNumber" class="form-label"></label>
+                    <input asp-for="MobileNumber" class="form-control" inputmode="numeric" maxlength="10" autocomplete="off" />
+                    <span asp-validation-for="MobileNumber" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Address" class="form-label"></label>
+                    <textarea asp-for="Address" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="Address" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <h2 class="h6 text-muted text-uppercase mt-4 mb-3">Shop login</h2>
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" autocomplete="off" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label asp-for="NewPassword" class="form-label"></label>
+                    <input asp-for="NewPassword" class="form-control" autocomplete="new-password" />
+                    <div class="form-text">Leave empty to keep the current password.</div>
+                    <span asp-validation-for="NewPassword" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <h2 class="h6 text-muted text-uppercase mt-4 mb-3">Assign consultant</h2>
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label asp-for="ConsultantId" class="form-label"></label>
+                    <select asp-for="ConsultantId" asp-items="Model.ConsultantOptions" class="form-select">
+                        <option value="">— Not assigned —</option>
+                    </select>
+                    <div class="form-text">Only active consultants of your centre can be chosen.</div>
+                    <span asp-validation-for="ConsultantId" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-lg" aria-hidden="true"></i> Save changes
+                </button>
+                <a class="btn btn-outline-secondary" asp-action="Shops">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
