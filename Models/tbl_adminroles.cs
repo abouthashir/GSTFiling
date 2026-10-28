@@ -4,13 +4,13 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace GSTFiling.Scaffolded;
+namespace GSTFiling.Models;
 
-public partial class tbl_month
+public partial class tbl_adminroles
 {
     [Key]
-    public int mid { get; set; }
+    public int roleid { get; set; }
 
     [StringLength(50)]
-    public string? month { get; set; }
+    public string? type { get; set; }
 }

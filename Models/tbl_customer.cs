@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace GSTFiling.Scaffolded;
+namespace GSTFiling.Models;
 
 public partial class tbl_customer
 {

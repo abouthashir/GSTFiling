@@ -4,15 +4,15 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace GSTFiling.Scaffolded;
+namespace GSTFiling.Models;
 
-public partial class tbl_socialmedia
+public partial class tbl_pages
 {
     [Key]
-    public int socialid { get; set; }
+    public int pgid { get; set; }
 
     [StringLength(100)]
-    public string? sname { get; set; }
+    public string? pgname { get; set; }
 
     public int? priority { get; set; }
 
@@ -20,4 +20,9 @@ public partial class tbl_socialmedia
 
     [StringLength(100)]
     public string? linkname { get; set; }
+
+    public bool? topactv { get; set; }
+
+    [StringLength(100)]
+    public string? backlink { get; set; }
 }

@@ -4,15 +4,17 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace GSTFiling.Scaffolded;
+namespace GSTFiling.Models;
 
-public partial class tbl_district
+public partial class tbl_consultant
 {
     [Key]
-    public int did { get; set; }
+    public int cnid { get; set; }
 
     [StringLength(200)]
-    public string? dname { get; set; }
+    public string? cnsltname { get; set; }
+
+    public int? did { get; set; }
 
     public bool? actv { get; set; }
 
@@ -23,6 +25,14 @@ public partial class tbl_district
 
     public int? priority { get; set; }
 
-    [StringLength(500)]
-    public string? img { get; set; }
+    [StringLength(150)]
+    public string? email { get; set; }
+
+    [StringLength(50)]
+    public string? mob1 { get; set; }
+
+    [StringLength(50)]
+    public string? mob2 { get; set; }
+
+    public string? address { get; set; }
 }

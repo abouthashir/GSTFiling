@@ -4,13 +4,13 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace GSTFiling.Scaffolded;
+namespace GSTFiling.Models;
 
-public partial class tbl_test
+public partial class tbl_taxrate
 {
     [Key]
-    public int id { get; set; }
+    public int txid { get; set; }
 
     [StringLength(50)]
-    public string? name { get; set; }
+    public string? txrate { get; set; }
 }

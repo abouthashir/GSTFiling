@@ -4,29 +4,26 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace GSTFiling.Scaffolded;
+namespace GSTFiling.Models;
 
-public partial class tbl_invconsultant
+public partial class tbl_invoicebill
 {
     [Key]
-    public int ascnsltid { get; set; }
+    public int bid { get; set; }
 
-    public int? did { get; set; }
+    public int? ascnsltid { get; set; }
 
-    public int? cnsltid { get; set; }
+    public int? cstmrid { get; set; }
 
     public int? cmid { get; set; }
 
-    public bool? reply { get; set; }
+    [Unicode(false)]
+    public string? invoice { get; set; }
 
     [StringLength(50)]
     public string? updte { get; set; }
 
-    public int? userid { get; set; }
-
     public int? mid { get; set; }
 
     public int? yid { get; set; }
-
-    public int? cstmrid { get; set; }
 }

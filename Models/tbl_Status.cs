@@ -4,15 +4,13 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace GSTFiling.Scaffolded;
+namespace GSTFiling.Models;
 
-public partial class tbl_ctype
+public partial class tbl_Status
 {
     [Key]
-    public int ctypid { get; set; }
+    public int stid { get; set; }
 
     [StringLength(50)]
-    public string? ctype { get; set; }
-
-    public int? priority { get; set; }
+    public string? status { get; set; }
 }

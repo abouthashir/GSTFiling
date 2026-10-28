@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using GSTFiling.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace GSTFiling.Scaffolded;
+namespace GSTFiling.Data;
 
 public partial class GstDbContext : DbContext
 {
