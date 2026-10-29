@@ -13,7 +13,7 @@ namespace GSTFiling.Models
         [MaxLength(500)]
         public string? UserName { get; set; }
 
-        [MaxLength(50)]
+        [MaxLength(500)]
         public string? Password { get; set; }
 
         [MaxLength(150)]

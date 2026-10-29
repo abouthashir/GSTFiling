@@ -1,16 +1,17 @@
-﻿
-using GSTFiling.Models;
+﻿using GSTFiling.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace GSTFiling.Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options)
+        public AppDbContext(
+            DbContextOptions<AppDbContext> options)
             : base(options)
         {
         }
 
+        // Existing database tables
         public DbSet<AboutUs> AboutUs { get; set; }
 
         public DbSet<Centre> Centres { get; set; }
@@ -29,6 +30,29 @@ namespace GSTFiling.Data
 
         public DbSet<User> Users { get; set; }
 
+        // Master Data tables
+        public DbSet<FinancialYear> FinancialYears { get; set; }
+
+        public DbSet<FilingMonths> FilingMonths { get; set; }
+
+        public DbSet<GstTaxRates> GstTaxRates { get; set; }
+
+        public DbSet<InvoiceClassification>
+            InvoiceClassifications
+        { get; set; }
+
+        // Shop invoices
         public DbSet<Invoice> Invoice { get; set; }
+
+        // Configure decimal precision
+        protected override void OnModelCreating(
+            ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<GstTaxRates>()
+                .Property(x => x.Rate)
+                .HasPrecision(5, 2);
+        }
     }
 }

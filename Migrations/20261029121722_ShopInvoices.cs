@@ -5,7 +5,7 @@
 namespace GSTFiling.Migrations
 {
     /// <inheritdoc />
-    public partial class Gstfiling : Migration
+    public partial class ShopInvoices : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -34,29 +34,6 @@ namespace GSTFiling.Migrations
                 {
                     table.PrimaryKey("PK_Invoice", x => x.invid);
                 });
-
-            migrationBuilder.CreateTable(
-                name: "Invoices",
-                columns: table => new
-                {
-                    invid = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    invnumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    invdate = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    invamtdec = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    gstnum = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    txid = table.Column<int>(type: "int", nullable: false),
-                    cmid = table.Column<int>(type: "int", nullable: false),
-                    amtgstout = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    sgst = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    cgst = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    cess = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    customer = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Invoices", x => x.invid);
-                });
         }
 
         /// <inheritdoc />
@@ -64,9 +41,6 @@ namespace GSTFiling.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Invoice");
-
-            migrationBuilder.DropTable(
-                name: "Invoices");
         }
     }
 }

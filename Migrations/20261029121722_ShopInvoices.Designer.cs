@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GSTFiling.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261022093752_Gstfiling")]
-    partial class Gstfiling
+    [Migration("20261029121722_ShopInvoices")]
+    partial class ShopInvoices
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -246,6 +246,46 @@ namespace GSTFiling.Migrations
                     b.ToTable("Districts");
                 });
 
+            modelBuilder.Entity("GSTFiling.Models.FilingMonths", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FilingMonths");
+                });
+
+            modelBuilder.Entity("GSTFiling.Models.FinancialYear", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FinancialYears");
+                });
+
             modelBuilder.Entity("GSTFiling.Models.GstFiling", b =>
                 {
                     b.Property<int>("InvoiceMonthId")
@@ -278,6 +318,26 @@ namespace GSTFiling.Migrations
                     b.HasKey("InvoiceMonthId");
 
                     b.ToTable("GstFilings");
+                });
+
+            modelBuilder.Entity("GSTFiling.Models.GstTaxRates", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Rate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GstTaxRates");
                 });
 
             modelBuilder.Entity("GSTFiling.Models.Invoice", b =>
@@ -332,50 +392,24 @@ namespace GSTFiling.Migrations
                     b.ToTable("Invoice");
                 });
 
-            modelBuilder.Entity("GSTFiling.Models.Invoices", b =>
+            modelBuilder.Entity("GSTFiling.Models.InvoiceClassification", b =>
                 {
-                    b.Property<int>("invid")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("invid"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("amtgstout")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
-                    b.Property<decimal>("cess")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("cgst")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("cmid")
-                        .HasColumnType("int");
-
-                    b.Property<string>("customer")
+                    b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("gstnum")
-                        .HasColumnType("nvarchar(max)");
+                    b.HasKey("Id");
 
-                    b.Property<decimal>("invamtdec")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("invdate")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("invnumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("sgst")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("txid")
-                        .HasColumnType("int");
-
-                    b.HasKey("invid");
-
-                    b.ToTable("Invoices");
+                    b.ToTable("InvoiceClassifications");
                 });
 
             modelBuilder.Entity("GSTFiling.Models.Role", b =>
@@ -417,8 +451,8 @@ namespace GSTFiling.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Password")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int?>("RoleId")
                         .HasColumnType("int");

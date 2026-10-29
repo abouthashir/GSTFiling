@@ -4,7 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-  <UserSecretsId>40658de1-f670-40a7-95dd-5adb3bb177ef</UserSecretsId>
+    <UserSecretsId>40658de1-f670-40a7-95dd-5adb3bb177ef</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +14,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
     <PackageReference Include="PdfPig" Version="0.1.16" />
-	  <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.12">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -24,7 +24,6 @@
   <ItemGroup>
     <Folder Include="Services\" />
     <Folder Include="Views\Consultant\" />
-    <Folder Include="Views\Admin\" />
   </ItemGroup>
 
 </Project>
