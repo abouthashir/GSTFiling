@@ -1,0 +1,633 @@
+﻿@using GSTFiling.Models
+@{
+    ViewData["Title"] = "System Configuration";
+
+    var years = ViewBag.FinancialYears as IEnumerable<FinancialYear>
+        ?? Enumerable.Empty<FinancialYear>();
+
+    var months = ViewBag.FilingMonths as IEnumerable<FilingMonths>
+        ?? Enumerable.Empty<FilingMonths>();
+
+    var rates = ViewBag.GstTaxRates as IEnumerable<GstTaxRates>
+        ?? Enumerable.Empty<GstTaxRates>();
+
+    var classifications = ViewBag.InvoiceClassifications as IEnumerable<InvoiceClassification>
+        ?? Enumerable.Empty<InvoiceClassification>();
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Master Data - GSTIntel</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --sage-green: #1B5E20;
+            --sage-dark: #0D3B12;
+            --sage-light: #EAF5E8;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #EAF5E8;
+            color: #24352a;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 245px;
+            min-width: 245px;
+            background: var(--sage-green);
+            color: white;
+            padding: 25px 16px;
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: bold;
+            margin: 0 0 8px 10px;
+        }
+
+        .logo span {
+            color: #EAF5E8;
+        }
+
+        .subtitle {
+            color: #EAF5E8;
+            font-size: 12px;
+            margin: 0 0 35px 10px;
+        }
+
+        .menu-title {
+            color: #D6EAD5;
+            font-size: 11px;
+            letter-spacing: 1px;
+            margin: 20px 10px 12px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #FFFFFF;
+            text-decoration: none;
+            padding: 13px 12px;
+            margin-bottom: 7px;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: background 0.2s ease;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: var(--sage-dark);
+            color: white;
+        }
+
+        .sidebar-signout {
+            display: block;
+            width: 100%;
+            text-align: left;
+            color: #FFFFFF;
+            background: transparent;
+            border: none;
+            padding: 13px 12px;
+            margin-bottom: 7px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .sidebar-signout:hover {
+            background: var(--sage-dark);
+            color: white;
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            flex: 1;
+            min-width: 0;
+            padding: 30px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 28px;
+            color: var(--sage-dark);
+        }
+
+        .topbar p {
+            color: #718076;
+            margin: 8px 0 0;
+            font-size: 14px;
+        }
+
+        .admin-label {
+            background: white;
+            border: 1px solid #D5E2D5;
+            border-radius: 20px;
+            padding: 10px 16px;
+            color: var(--sage-green);
+            font-size: 13px;
+        }
+
+        /* FOUR DATA CARDS */
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px;
+        }
+
+        .data-card {
+            background: white;
+            border: 1px solid #DDE7DC;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 3px 12px rgba(13, 59, 18, 0.08);
+            min-width: 0;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--sage-dark);
+        }
+
+        .count {
+            background: var(--sage-light);
+            color: var(--sage-green);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        /* ADD FORMS */
+        .add-form {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .add-form input {
+            flex: 1;
+            width: 100%;
+            min-width: 0;
+            padding: 11px;
+            border: 1px solid #D5E1D8;
+            border-radius: 7px;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .add-form input:focus {
+            border-color: var(--sage-green);
+            box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.12);
+        }
+
+        .add-btn {
+            background: var(--sage-green);
+            color: white;
+            border: none;
+            border-radius: 7px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            white-space: nowrap;
+            transition: background 0.2s ease;
+        }
+
+        .add-btn:hover {
+            background: var(--sage-dark);
+        }
+
+        /* TABLES */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: var(--sage-light);
+        }
+
+        th {
+            text-align: left;
+            color: var(--sage-dark);
+            font-size: 11px;
+            letter-spacing: 0.4px;
+            padding: 12px 8px;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #EDF1EE;
+            color: #34483A;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover {
+            background: #F1F7F0;
+        }
+
+        .number {
+            color: var(--sage-green);
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        /* DELETE BUTTON */
+        .delete-form {
+            margin: 0;
+        }
+
+        .delete-btn {
+            background: #FFF0F0;
+            color: #C0392B;
+            border: 1px solid #F4D2D0;
+            border-radius: 6px;
+            padding: 6px 9px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .delete-btn:hover {
+            background: #FFDDDD;
+        }
+
+        .empty {
+            text-align: center;
+            color: #8A968D;
+            padding: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            color: #849187;
+            font-size: 12px;
+            margin-top: 28px;
+        }
+
+        .error-message {
+            background: #FFF0F0;
+            color: #B91C1C;
+            padding: 10px 14px;
+            border-radius: 7px;
+            margin-bottom: 18px;
+        }
+
+        @@media (max-width: 900px) {
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                width: 200px;
+                min-width: 200px;
+            }
+
+            .main {
+                padding: 20px;
+            }
+        }
+
+        @@media (max-width: 600px) {
+            .layout {
+                display: block;
+            }
+
+            .sidebar {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .main {
+                padding: 16px;
+            }
+
+            .topbar h1 {
+                font-size: 23px;
+            }
+
+            .data-card {
+                padding: 15px;
+            }
+
+            .add-form {
+                flex-direction: column;
+            }
+
+            .add-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="logo">System<span>Admin</span></div>
+            <div class="subtitle">Control Panel</div>
+
+            <div class="menu-title">MAIN MENU</div>
+
+            <a href="/Admin/Dashboard">▦ &nbsp; Dashboard</a>
+            <a href="/Admin/Centres">▣ &nbsp; Manage Centres</a>
+            <a href="/Admin/MasterData" class="active">▤ &nbsp; Master Data</a>
+
+            <div class="menu-title">ACCOUNT</div>
+
+            <form action="/Auth/Logout" method="post" style="margin: 0;">
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="sidebar-signout">
+                    ↪ &nbsp; Sign Out
+                </button>
+            </form>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main">
+
+            <div class="topbar">
+                <div>
+                    <h1>System Configuration</h1>
+                    <p>Manage financial years, filing months, GST rates and classifications.</p>
+                </div>
+
+                <div class="admin-label">● System Online</div>
+            </div>
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="error-message">@TempData["Error"]</div>
+            }
+
+            <div class="data-grid">
+
+                <!-- FINANCIAL YEARS -->
+                <section class="data-card">
+                    <div class="card-header">
+                        <h2>Financial Years</h2>
+                        <span class="count">@years.Count() Records</span>
+                    </div>
+
+                    <form method="post" action="/Admin/AddFinancialYear" class="add-form">
+                        @Html.AntiForgeryToken()
+                        <input type="text" name="name"
+                               placeholder="Enter year (e.g. 2026-27)" required />
+                        <button type="submit" class="add-btn">+ Add</button>
+                    </form>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>YEAR LABEL</th>
+                                    <th>ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (years.Any())
+                                {
+                                    foreach (var item in years)
+                                    {
+                                        <tr>
+                                            <td class="number">#@item.Id</td>
+                                            <td>@item.Name</td>
+                                            <td>
+                                                <form method="post" action="/Admin/DeleteFinancialYear"
+                                                      class="delete-form"
+                                                      onsubmit="return confirm('Delete this financial year?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <button type="submit" class="delete-btn" title="Delete">🗑</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="3" class="empty">No financial years found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- FILING MONTHS -->
+                <section class="data-card">
+                    <div class="card-header">
+                        <h2>Filing Months</h2>
+                        <span class="count">@months.Count() Records</span>
+                    </div>
+
+                    <form method="post" action="/Admin/AddFilingMonth" class="add-form">
+                        @Html.AntiForgeryToken()
+                        <input type="text" name="name"
+                               placeholder="Enter month name" required />
+                        <button type="submit" class="add-btn">+ Add</button>
+                    </form>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>MONTH NAME</th>
+                                    <th>ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (months.Any())
+                                {
+                                    foreach (var item in months)
+                                    {
+                                        <tr>
+                                            <td class="number">#@item.Id</td>
+                                            <td>@item.Name</td>
+                                            <td>
+                                                <form method="post" action="/Admin/DeleteFilingMonth"
+                                                      class="delete-form"
+                                                      onsubmit="return confirm('Delete this filing month?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <button type="submit" class="delete-btn" title="Delete">🗑</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="3" class="empty">No filing months found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- GST TAX RATES -->
+                <section class="data-card">
+                    <div class="card-header">
+                        <h2>GST Tax Rates</h2>
+                        <span class="count">@rates.Count() Records</span>
+                    </div>
+
+                    <form method="post" action="/Admin/AddGstTaxRate" class="add-form">
+                        @Html.AntiForgeryToken()
+                        <input type="number" name="rate"
+                               placeholder="Enter GST rate (e.g. 18)"
+                               min="0" max="999.99" step="0.01" required />
+                        <button type="submit" class="add-btn">+ Add</button>
+                    </form>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>GST RATE</th>
+                                    <th>ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (rates.Any())
+                                {
+                                    foreach (var item in rates)
+                                    {
+                                        <tr>
+                                            <td class="number">#@item.Id</td>
+                                            <td>@item.Rate.ToString("0.##")%</td>
+                                            <td>
+                                                <form method="post" action="/Admin/DeleteGstTaxRate"
+                                                      class="delete-form"
+                                                      onsubmit="return confirm('Delete this GST tax rate?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <button type="submit" class="delete-btn" title="Delete">🗑</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="3" class="empty">No GST tax rates found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- INVOICE CLASSIFICATION -->
+                <section class="data-card">
+                    <div class="card-header">
+                        <h2>Invoice Classification</h2>
+                        <span class="count">@classifications.Count() Records</span>
+                    </div>
+
+                    <form method="post" action="/Admin/AddInvoiceClassification" class="add-form">
+                        @Html.AntiForgeryToken()
+                        <input type="text" name="name"
+                               placeholder="Enter classification name" required />
+                        <button type="submit" class="add-btn">+ Add</button>
+                    </form>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>CLASSIFICATION</th>
+                                    <th>ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (classifications.Any())
+                                {
+                                    foreach (var item in classifications)
+                                    {
+                                        <tr>
+                                            <td class="number">#@item.Id</td>
+                                            <td>@item.Name</td>
+                                            <td>
+                                                <form method="post" action="/Admin/DeleteInvoiceClassification"
+                                                      class="delete-form"
+                                                      onsubmit="return confirm('Delete this invoice classification?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <button type="submit" class="delete-btn" title="Delete">🗑</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="3" class="empty">No classifications found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </div>
+
+            <div class="footer">
+                GSTIntel System Configuration
+            </div>
+
+        </main>
+    </div>
+</body>
+</html>

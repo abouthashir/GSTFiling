@@ -3,6 +3,7 @@ using GSTFiling.Data;
 using GSTFiling.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,51 +12,101 @@ namespace GSTFiling.Controllers
     public class AuthController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly PasswordHasher<User> _passwordHasher;
 
         public AuthController(AppDbContext context)
         {
             _context = context;
+            _passwordHasher = new PasswordHasher<User>();
         }
 
+        // LOGIN PAGE
         [HttpGet]
         public IActionResult Login()
         {
-            // Already logged in? Go straight to your own dashboard.
             if (User.Identity?.IsAuthenticated == true)
             {
-                var home = GetRoleHome(User.FindFirstValue(ClaimTypes.Role));
+                var home = GetRoleHome(
+                    User.FindFirstValue(ClaimTypes.Role));
+
                 if (home != null)
-                {
                     return home;
-                }
             }
 
             return View();
         }
 
+        // LOGIN SUBMIT
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(string username, string password)
+        public async Task<IActionResult> Login(
+            string username,
+            string password)
         {
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrWhiteSpace(username) ||
+                string.IsNullOrEmpty(password))
             {
-                ViewBag.EmailError = "Enter your email and password.";
+                ViewBag.EmailError =
+                    "Enter your email and password.";
+
                 return View();
             }
 
-            var email = username.Trim().ToLower();
+            var email = username.Trim().ToLowerInvariant();
 
-            // Every account (Admin, Centre, Consultant, Shop) is in the Users table
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email != null && u.Email.ToLower() == email);
+                .FirstOrDefaultAsync(u =>
+                    u.Email != null &&
+                    u.Email.ToLower() == email);
 
-            if (user == null || user.Password != password)
-            {
+            if (user == null)
                 return LoginFailed();
-            }
+
             if (user.IsActive == false)
-            {
                 return AccountInactive();
+
+            // Support existing plain-text passwords
+            // and passwords stored as ASP.NET Identity hashes.
+            bool passwordIsValid = false;
+            bool isLegacyPlainText = false;
+
+            if (user.Password == password)
+            {
+                passwordIsValid = true;
+                isLegacyPlainText = true;
+            }
+            else if (!string.IsNullOrWhiteSpace(user.Password))
+            {
+                try
+                {
+                    var result = _passwordHasher.VerifyHashedPassword(
+                        user,
+                        user.Password,
+                        password);
+
+                    passwordIsValid =
+                        result != PasswordVerificationResult.Failed;
+                }
+                catch (FormatException)
+                {
+                    passwordIsValid = false;
+                }
+                catch (ArgumentException)
+                {
+                    passwordIsValid = false;
+                }
+            }
+
+            if (!passwordIsValid)
+                return LoginFailed();
+
+            // Upgrade old plain-text passwords to a hash after login.
+            if (isLegacyPlainText)
+            {
+                user.Password = _passwordHasher.HashPassword(
+                    user, password);
+
+                await _context.SaveChangesAsync();
             }
 
             var roleName = await _context.Roles
@@ -63,20 +114,28 @@ namespace GSTFiling.Controllers
                 .Select(r => r.Name)
                 .FirstOrDefaultAsync();
 
-            if (roleName is not (Role.Admin or Role.Centre or Role.Consultant or Role.Shop))
+            if (roleName is not
+                (Role.Admin or Role.Centre or
+                 Role.Consultant or Role.Shop))
             {
                 return LoginFailed();
             }
 
-            var claims = CreateClaims(user.Id, user.UserName ?? email, email, roleName);
+            var claims = CreateClaims(
+                user.Id,
+                user.UserName ?? email,
+                email,
+                roleName);
 
             if (user.CentreId.HasValue)
             {
-                claims.Add(new Claim("CentreId", user.CentreId.Value.ToString()));
+                claims.Add(new Claim(
+                    "CentreId",
+                    user.CentreId.Value.ToString()));
             }
 
-            // Each role needs its own link, or its pages cannot work
-            if (roleName == Role.Centre && user.CentreId == null)
+            if (roleName == Role.Centre &&
+                user.CentreId == null)
             {
                 return LoginFailed();
             }
@@ -84,80 +143,126 @@ namespace GSTFiling.Controllers
             if (roleName == Role.Consultant)
             {
                 if (user.ConsultantId == null)
-                {
                     return LoginFailed();
-                }
-                claims.Add(new Claim("ConsultantId", user.ConsultantId.Value.ToString()));
+
+                claims.Add(new Claim(
+                    "ConsultantId",
+                    user.ConsultantId.Value.ToString()));
             }
 
             if (roleName == Role.Shop)
             {
                 if (user.ShopId == null)
-                {
                     return LoginFailed();
-                }
-                claims.Add(new Claim("ShopId", user.ShopId.Value.ToString()));
+
+                claims.Add(new Claim(
+                    "ShopId",
+                    user.ShopId.Value.ToString()));
             }
 
             return await SignInAndGoHome(claims, roleName);
         }
 
+        // LOGOUT
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login");
+            await HttpContext.SignOutAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
+            return RedirectToAction("Login", "Auth");
         }
 
+        // ACCESS DENIED
         [HttpGet]
         public IActionResult AccessDenied()
         {
             return View();
         }
 
-        // ---------- Helpers ----------
-
-        private static List<Claim> CreateClaims(int id, string name, string email, string role)
+        // CREATE USER CLAIMS
+        private static List<Claim> CreateClaims(
+            int id,
+            string name,
+            string email,
+            string role)
         {
             return new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
-                new Claim(ClaimTypes.Name, name),
-                new Claim(ClaimTypes.Email, email),
-                new Claim(ClaimTypes.Role, role)
+                new Claim(
+                    ClaimTypes.NameIdentifier,
+                    id.ToString()),
+
+                new Claim(
+                    ClaimTypes.Name,
+                    name),
+
+                new Claim(
+                    ClaimTypes.Email,
+                    email),
+
+                new Claim(
+                    ClaimTypes.Role,
+                    role)
             };
         }
 
-        private async Task<IActionResult> SignInAndGoHome(List<Claim> claims, string role)
+        // SIGN IN AND REDIRECT
+        private async Task<IActionResult> SignInAndGoHome(
+            List<Claim> claims,
+            string role)
         {
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
+            var identity = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme);
 
-            return GetRoleHome(role) ?? RedirectToAction("Login");
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal);
+
+            return GetRoleHome(role)
+                ?? RedirectToAction("Login", "Auth");
         }
 
+        // ROLE-BASED DASHBOARD
         private IActionResult? GetRoleHome(string? role)
         {
             return role switch
             {
-                Role.Admin => RedirectToAction("Dashboard", "Admin"),
-                Role.Centre => RedirectToAction("Dashboard", "Firm"),
-                Role.Consultant => RedirectToAction("Dashboard", "Consultant"),
-                Role.Shop => RedirectToAction("Dashboard", "Shop"),
+                Role.Admin =>
+                    RedirectToAction("Dashboard", "Admin"),
+
+                Role.Centre =>
+                    RedirectToAction("Dashboard", "Firm"),
+
+                Role.Consultant =>
+                    RedirectToAction("Dashboard", "Consultant"),
+
+                Role.Shop =>
+                    RedirectToAction("Dashboard", "Shop"),
+
                 _ => null
             };
         }
 
+        // INVALID LOGIN
         private IActionResult LoginFailed()
         {
-            ViewBag.EmailError = "Email or password is incorrect.";
+            ViewBag.EmailError =
+                "Email or password is incorrect.";
+
             return View("Login");
         }
 
+        // INACTIVE ACCOUNT
         private IActionResult AccountInactive()
         {
-            ViewBag.EmailError = "This account is inactive. Please contact your centre.";
+            ViewBag.EmailError =
+                "This account is inactive. Please contact your centre.";
+
             return View("Login");
         }
     }
