@@ -1,0 +1,307 @@
+﻿@model GSTFiling.Models.Customer
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Enter Invoice Details";
+    var invoices = ViewBag.Invoices as List<GSTFiling.Models.Invoice> ?? new List<GSTFiling.Models.Invoice>();
+    int typeId = ViewBag.TypeId ?? 2;
+}
+
+<div class="container-fluid py-4" style="background-color: #f4fbf7; min-height: 85vh;">
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+        <h3 class="fw-bold text-success">GSTIntel</h3>
+        <a asp-action="Dashboard" asp-route-id="@Model?.Id" class="btn btn-outline-success px-4">Logout</a>
+    </div>
+
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 mb-3">
+            <div class="card text-white p-4 shadow-sm border-0 rounded-4 text-center" style="background-color: #0d5c31 !important;">
+                <div class="d-flex justify-content-center mb-3">
+                    <div class="bg-white rounded-circle d-flex align-items-center justify-content-center text-success fw-bold fs-3" style="width: 80px; height: 80px;">
+                        @(Model?.ShopName != null && Model.ShopName.Length > 0 ? Model.ShopName.Substring(0, 1).ToUpper() : "S")
+                    </div>
+                </div>
+                <h4 class="fw-bold mb-1">@(Model?.ShopName ?? "Shop Portal")</h4>
+                <div class="bg-white text-dark rounded-3 py-2 px-3 fw-bold text-start shadow-sm mt-3">
+                    <a asp-action="Dashboard" asp-route-id="@Model?.Id" class="text-decoration-none text-success">■ Dashboard</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Form & List -->
+        <div class="col-md-9">
+            <div class="card border-0 shadow-sm p-4 rounded-4 bg-white mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="fw-bold text-success m-0">Enter Invoice Details</h4>
+                    <a asp-action="Dashboard" asp-route-id="@Model?.Id" class="btn btn-outline-danger btn-sm px-4">← Back</a>
+                </div>
+                <hr />
+
+                <form asp-action="AddInvoice" asp-route-cmid="@Model?.Id" asp-route-typeId="@typeId" method="post" id="invoiceForm">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Invoice Number *</label>
+                            <input name="invno" id="invNo" class="form-control" placeholder="Enter Invoice Number" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Invoice Date *</label>
+                            <input type="date" name="invdate" id="invDate" class="form-control" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Customer Name</label>
+                            <input name="customerName" id="customerName" class="form-control" placeholder="Enter Customer Name" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Invoice GST Number</label>
+                            <input name="gstNumber" id="gstNumber" class="form-control" placeholder="Enter GST Number" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Select Tax Rate *</label>
+                            <select id="TaxRate" name="taxrate" class="form-select" required onchange="calculateTax()">
+                                <option value="">--Select Tax Rate--</option>
+                                <option value="0">0%</option>
+                                <option value="5">5%</option>
+                                <option value="12">12%</option>
+                                <option value="18">18%</option>
+                                <option value="28">28%</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Taxable Amount *</label>
+                            <input type="number" step="0.01" id="TaxableAmount" name="taxable" class="form-control" placeholder="Enter Amount without GST" required oninput="calculateTax()" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Total Bill Amount</label>
+                            <input type="number" step="0.01" id="TotalBillAmount" class="form-control" readonly />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">CGST Amount</label>
+                            <input type="number" step="0.01" id="CgstAmount" name="cgst" class="form-control" readonly value="0.00" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">SGST Amount</label>
+                            <input type="number" step="0.01" id="SgstAmount" name="sgst" class="form-control" readonly value="0.00" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">Cess Amount</label>
+                            <input type="number" step="0.01" id="CessAmount" name="cess" class="form-control" value="0.00" oninput="calculateTax()" />
+                        </div>
+
+                        <div class="col-12 mt-4 d-flex gap-2 flex-wrap align-items-center">
+                            <button type="submit" class="btn btn-success px-4">Save</button>
+                            <button type="button" class="btn btn-primary px-3" onclick="exportToExcel()">Export to Excel</button>
+                            
+                            <label class="btn btn-secondary px-3 mb-0" style="cursor: pointer;" id="lblUploadInvoice">
+                                <span id="lblUploadText">Upload Invoices</span>
+                                <input type="file" id="mainInvoiceUpload" accept=".png,.jpg,.jpeg,.pdf" style="display: none;" onchange="uploadMainInvoiceAjax(this)" />
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- OpenAI AI Result Preview Card -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4" id="aiResultCard" style="display: none;">
+                <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold text-success mb-0"><i class="bi bi-stars me-2"></i>Invoice Read by OpenAI</h6>
+                    <button type="button" class="btn-close" aria-label="Close" onclick="document.getElementById('aiResultCard').style.display='none'"></button>
+                </div>
+                <div class="card-body p-4 bg-light">
+                    <div class="row g-4">
+                        <div class="col-md-5 text-center">
+                            <p class="small fw-bold text-muted mb-2">Invoice Preview</p>
+                            <img id="invoicePreviewImg" src="#" alt="Invoice Preview" class="img-fluid rounded border shadow-sm" style="max-height: 250px; display: none;" />
+                            <iframe id="invoicePreviewPdf" src="" class="w-100 rounded border shadow-sm" style="height: 250px; display: none;"></iframe>
+                        </div>
+                        <div class="col-md-7">
+                            <p class="small fw-bold text-muted mb-2">Extracted Details</p>
+                            <div id="aiExtractionResults" class="bg-white border rounded shadow-sm"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice List Table -->
+            <div class="card border-0 shadow-sm p-4 rounded-4 bg-white">
+                <h5 class="fw-bold text-success mb-3">Invoice List</h5>
+                <div class="table-responsive">
+                    <table class="table align-middle" id="invTable">
+                        <thead class="text-uppercase small text-muted border-bottom">
+                            <tr>
+                                <th>InvNumber</th>
+                                <th>InvDate</th>
+                                <th>Tax %</th>
+                                <th class="text-end">Taxable Amt</th>
+                                <th class="text-end">CGST</th>
+                                <th class="text-end">SGST</th>
+                                <th class="text-end">Cess</th>
+                                <th class="text-end">Total GST</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (invoices != null && invoices.Any())
+                            {
+                                @foreach (var inv in invoices)
+                                {
+                                    <tr>
+                                        <td>@(inv.invno ?? "N/A")</td>
+                                        <td>@(inv.invdate ?? "N/A")</td>
+                                        <td>@(inv.taxrate)%</td>
+                                        <td class="text-end">₹ @inv.taxable_amt.ToString("N2")</td>
+                                        <td class="text-end">₹ @inv.cgst.ToString("N2")</td>
+                                        <td class="text-end">₹ @inv.sgst.ToString("N2")</td>
+                                        <td class="text-end">₹ @inv.cess.ToString("N2")</td>
+                                        <td class="text-end fw-bold text-success">₹ @inv.gst_amt.ToString("N2")</td>
+                                        <td class="text-center">
+                                            <form asp-action="DeleteInvoice" asp-route-id="@inv.invid" asp-route-cmid="@Model?.Id" asp-route-typeId="@typeId" method="post" class="d-inline" onsubmit="return confirm('Delete this record?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-link text-danger p-0">🗑️</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted py-4">
+                                        No invoices added yet. Fill the form above and click Save.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function calculateTax() {
+            let taxableAmount = parseFloat(document.getElementById('TaxableAmount').value) || 0;
+            let taxRate = parseFloat(document.getElementById('TaxRate').value) || 0;
+            let cessAmount = parseFloat(document.getElementById('CessAmount').value) || 0;
+
+            let totalTaxAmount = taxableAmount * (taxRate / 100);
+            let cgst = totalTaxAmount / 2;
+            let sgst = totalTaxAmount / 2;
+            let totalBillAmount = taxableAmount + totalTaxAmount + cessAmount;
+
+            document.getElementById('CgstAmount').value = cgst.toFixed(2);
+            document.getElementById('SgstAmount').value = sgst.toFixed(2);
+            document.getElementById('TotalBillAmount').value = totalBillAmount.toFixed(2);
+        }
+
+        function uploadMainInvoiceAjax(input) {
+            if (!input.files || !input.files[0]) return;
+
+            var lblText = document.getElementById('lblUploadText');
+            var originalText = lblText.innerHTML;
+            lblText.innerHTML = 'Uploading...';
+            document.getElementById('lblUploadInvoice').style.pointerEvents = 'none';
+
+            var aiResultCard = document.getElementById('aiResultCard');
+            var imgPreview = document.getElementById('invoicePreviewImg');
+            var pdfPreview = document.getElementById('invoicePreviewPdf');
+            var resultsDiv = document.getElementById('aiExtractionResults');
+
+            aiResultCard.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="p-4 text-center">Analyzing with OpenAI...</div>';
+
+            var ext = input.files[0].name.split('.').pop().toLowerCase();
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                if (ext === 'pdf') {
+                    imgPreview.style.display = 'none';
+                    pdfPreview.src = e.target.result;
+                    pdfPreview.style.display = 'block';
+                } else {
+                    pdfPreview.style.display = 'none';
+                    imgPreview.src = e.target.result;
+                    imgPreview.style.display = 'inline-block';
+                }
+            }
+            reader.readAsDataURL(input.files[0]);
+
+            var formData = new FormData();
+            formData.append('file', input.files[0]);
+            formData.append('cmid', '@Model?.Id');
+            formData.append('typeId', '@typeId');
+
+            fetch('/Shop/UploadAndReadInvoiceAjax', {
+                method: 'POST',
+                body: formData
+            })
+            .then(async response => {
+                let responseData;
+                let text = await response.text();
+                try {
+                    responseData = JSON.parse(text);
+                } catch {
+                    responseData = { message: text || "Server error: " + response.status };
+                }
+
+                if (!response.ok) {
+                    throw new Error(responseData.message || "Upload failed");
+                }
+                return responseData;
+            })
+            .then(data => {
+                lblText.innerHTML = originalText;
+                document.getElementById('lblUploadInvoice').style.pointerEvents = 'auto';
+                input.value = "";
+
+                document.getElementById('invNo').value = data.invno || '';
+                document.getElementById('invDate').value = data.invdate || '';
+                document.getElementById('customerName').value = data.customerName || '';
+                document.getElementById('gstNumber').value = data.gstNumber || '';
+                document.getElementById('TaxRate').value = data.taxrate || '';
+                document.getElementById('TaxableAmount').value = data.taxable || '';
+                document.getElementById('CessAmount').value = data.cess || '0.00';
+
+                calculateTax();
+                resultsDiv.innerHTML = `<ul class="list-group list-group-flush small">
+                    <li class="list-group-item"><strong>Invoice No:</strong> ${data.invno || '-'}</li>
+                    <li class="list-group-item"><strong>Date:</strong> ${data.invdate || '-'}</li>
+                    <li class="list-group-item"><strong>Taxable Amt:</strong> ₹${data.taxable || '-'}</li>
+                    <li class="list-group-item"><strong>Total GST:</strong> ₹${(data.cgst + data.sgst + data.cess).toFixed(2)}</li>
+                </ul>`;
+
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultsDiv.innerHTML = `<div class="p-4 text-danger small"><strong>AI Error:</strong> ${error.message}</div>`;
+                lblText.innerHTML = originalText;
+                document.getElementById('lblUploadInvoice').style.pointerEvents = 'auto';
+                input.value = "";
+            });
+        }
+
+        function exportToExcel() {
+            var rows = [['InvNumber', 'InvDate', 'Tax%', 'Taxable', 'CGST', 'SGST', 'Cess', 'TotalGST']];
+            document.querySelectorAll('#invTable tbody tr').forEach(function(tr) {
+                var cells = tr.querySelectorAll('td');
+                if (cells.length > 1) {
+                    rows.push(Array.from(cells).slice(0, 8).map(td => td.innerText.trim().replace('₹ ', '').replace(/,/g, '')));
+                }
+            });
+            var csv = rows.map(r => r.join(',')).join('\n');
+            var a = document.createElement('a');
+            a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+            a.download = 'invoices.csv';
+            a.click();
+        }
+    </script>
+}

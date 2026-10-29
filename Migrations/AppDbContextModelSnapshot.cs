@@ -277,6 +277,138 @@ namespace GSTFiling.Migrations
                     b.ToTable("GstFilings");
                 });
 
+            modelBuilder.Entity("GSTFiling.Models.Invoice", b =>
+                {
+                    b.Property<int>("invid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("invid"));
+
+                    b.Property<string>("billamtstr")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("cess")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("cgst")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("cstmrid")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("gst_amt")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("invdate")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("invmonth")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("invno")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("invyear")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("sgst")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("taxable_amt")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("taxrate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("type")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("invid");
+
+                    b.ToTable("Invoice");
+                });
+
+            modelBuilder.Entity("GSTFiling.Models.InvoiceType", b =>
+                {
+                    b.Property<int>("ctypid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ctypid"));
+
+                    b.Property<string>("ctype")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ctypid");
+
+                    b.ToTable("tbl_ctype", (string)null);
+                });
+
+            modelBuilder.Entity("GSTFiling.Models.Invoices", b =>
+                {
+                    b.Property<int>("invid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("invid"));
+
+                    b.Property<decimal>("amtgstout")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("cess")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("cgst")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("cmid")
+                        .HasColumnType("int");
+
+                    b.Property<string>("customer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("gstnum")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("invamtdec")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("invdate")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("invnumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("sgst")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("txid")
+                        .HasColumnType("int");
+
+                    b.HasKey("invid");
+
+                    b.ToTable("Invoices");
+                });
+
+            modelBuilder.Entity("GSTFiling.Models.Month", b =>
+                {
+                    b.Property<int>("mid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("mid"));
+
+                    b.Property<string>("month")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("mid");
+
+                    b.ToTable("tbl_month", (string)null);
+                });
+
             modelBuilder.Entity("GSTFiling.Models.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -340,6 +472,22 @@ namespace GSTFiling.Migrations
                         .HasFilter("[Email] IS NOT NULL");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("GSTFiling.Models.Year", b =>
+                {
+                    b.Property<int>("yid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("yid"));
+
+                    b.Property<int>("year")
+                        .HasColumnType("int");
+
+                    b.HasKey("yid");
+
+                    b.ToTable("tbl_year", (string)null);
                 });
 #pragma warning restore 612, 618
         }

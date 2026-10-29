@@ -1,0 +1,52 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Upload Invoices";
+    int cmid = ViewBag.Cmid ?? 0;
+    int typeId = ViewBag.TypeId ?? 0;
+}
+
+<div class="container-fluid py-5 min-vh-100" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white">
+                <div class="card-header bg-white border-0 py-4 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold text-success mb-0"><i class="bi bi-cloud-arrow-up-fill me-2"></i>Upload Files</h5>
+                    <a href="/Shop/Invoices?cmid=@cmid&typeId=@typeId" class="btn btn-outline-secondary btn-sm rounded-pill px-4 fw-medium">
+                        <i class="bi bi-arrow-left me-1"></i>Back
+                    </a>
+                </div>
+                
+                <div class="card-body p-5 text-center">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show text-start" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <div class="p-4 rounded-4" style="background-color: #f8f9fa; border: 2px dashed #198754;">
+                        <h6 class="fw-bold text-dark mb-3">Multiple File Upload (File size should be less than 1 MB)</h6>
+                        
+                        <form method="post" action="/Shop/UploadInvoiceDocument" enctype="multipart/form-data">
+                            <input type="hidden" name="cmid" value="@cmid" />
+                            <input type="hidden" name="typeId" value="@typeId" />
+                            
+                            <div class="mb-4">
+                                <input class="form-control form-control-lg shadow-sm" type="file" name="file" id="formFile" required>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success rounded-pill px-5 py-2 fw-bold shadow">
+                                <i class="bi bi-upload me-2"></i>UPLOAD
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <p class="text-muted small">&copy; @DateTime.Now.Year GST Management System. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</div>
