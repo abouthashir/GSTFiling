@@ -23,329 +23,347 @@
     <title>Master Data - GSTIntel</title>
 
     <style>
-            * {
-                box-sizing: border-box;
-            }
+        * {
+            box-sizing: border-box;
+        }
 
-            body {
-                margin: 0;
-                font-family: Arial, Helvetica, sans-serif;
-                background: #f3f7f4;
-                color: #24352a;
-            }
+        :root {
+            --sage-green: #1B5E20;
+            --sage-dark: #0D3B12;
+            --sage-light: #EAF5E8;
+        }
 
-            .layout {
-                display: flex;
-                min-height: 100vh;
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #EAF5E8;
+            color: #24352a;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 245px;
+            min-width: 245px;
+            background: var(--sage-green);
+            color: white;
+            padding: 25px 16px;
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: bold;
+            margin: 0 0 8px 10px;
+        }
+
+        .logo span {
+            color: #EAF5E8;
+        }
+
+        .subtitle {
+            color: #EAF5E8;
+            font-size: 12px;
+            margin: 0 0 35px 10px;
+        }
+
+        .menu-title {
+            color: #D6EAD5;
+            font-size: 11px;
+            letter-spacing: 1px;
+            margin: 20px 10px 12px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #FFFFFF;
+            text-decoration: none;
+            padding: 13px 12px;
+            margin-bottom: 7px;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: background 0.2s ease;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: var(--sage-dark);
+            color: white;
+        }
+
+        .sidebar-signout {
+            display: block;
+            width: 100%;
+            text-align: left;
+            color: #FFFFFF;
+            background: transparent;
+            border: none;
+            padding: 13px 12px;
+            margin-bottom: 7px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .sidebar-signout:hover {
+            background: var(--sage-dark);
+            color: white;
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            flex: 1;
+            min-width: 0;
+            padding: 30px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 28px;
+            color: var(--sage-dark);
+        }
+
+        .topbar p {
+            color: #718076;
+            margin: 8px 0 0;
+            font-size: 14px;
+        }
+
+        .admin-label {
+            background: white;
+            border: 1px solid #D5E2D5;
+            border-radius: 20px;
+            padding: 10px 16px;
+            color: var(--sage-green);
+            font-size: 13px;
+        }
+
+        /* FOUR DATA CARDS */
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px;
+        }
+
+        .data-card {
+            background: white;
+            border: 1px solid #DDE7DC;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 3px 12px rgba(13, 59, 18, 0.08);
+            min-width: 0;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--sage-dark);
+        }
+
+        .count {
+            background: var(--sage-light);
+            color: var(--sage-green);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        /* ADD FORMS */
+        .add-form {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .add-form input {
+            flex: 1;
+            width: 100%;
+            min-width: 0;
+            padding: 11px;
+            border: 1px solid #D5E1D8;
+            border-radius: 7px;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .add-form input:focus {
+            border-color: var(--sage-green);
+            box-shadow: 0 0 0 2px rgba(27, 94, 32, 0.12);
+        }
+
+        .add-btn {
+            background: var(--sage-green);
+            color: white;
+            border: none;
+            border-radius: 7px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            white-space: nowrap;
+            transition: background 0.2s ease;
+        }
+
+        .add-btn:hover {
+            background: var(--sage-dark);
+        }
+
+        /* TABLES */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: var(--sage-light);
+        }
+
+        th {
+            text-align: left;
+            color: var(--sage-dark);
+            font-size: 11px;
+            letter-spacing: 0.4px;
+            padding: 12px 8px;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #EDF1EE;
+            color: #34483A;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover {
+            background: #F1F7F0;
+        }
+
+        .number {
+            color: var(--sage-green);
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        /* DELETE BUTTON */
+        .delete-form {
+            margin: 0;
+        }
+
+        .delete-btn {
+            background: #FFF0F0;
+            color: #C0392B;
+            border: 1px solid #F4D2D0;
+            border-radius: 6px;
+            padding: 6px 9px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .delete-btn:hover {
+            background: #FFDDDD;
+        }
+
+        .empty {
+            text-align: center;
+            color: #8A968D;
+            padding: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            color: #849187;
+            font-size: 12px;
+            margin-top: 28px;
+        }
+
+        .error-message {
+            background: #FFF0F0;
+            color: #B91C1C;
+            padding: 10px 14px;
+            border-radius: 7px;
+            margin-bottom: 18px;
+        }
+
+        @@media (max-width: 900px) {
+            .data-grid {
+                grid-template-columns: 1fr;
             }
 
             .sidebar {
-                width: 245px;
-                min-width: 245px;
-                background: #123d2a;
-                color: white;
-                padding: 25px 16px;
+                width: 200px;
+                min-width: 200px;
             }
-
-            .logo {
-                font-size: 25px;
-                font-weight: bold;
-                margin: 0 0 8px 10px;
-            }
-
-                .logo span {
-                    color: #7ee0a3;
-                }
-
-            .subtitle {
-                color: #c0d7c9;
-                font-size: 12px;
-                margin: 0 0 35px 10px;
-            }
-
-            .menu-title {
-                color: #a8c8b4;
-                font-size: 11px;
-                letter-spacing: 1px;
-                margin: 20px 10px 12px;
-            }
-
-            .sidebar a {
-                display: block;
-                color: #e4f0e8;
-                text-decoration: none;
-                padding: 13px 12px;
-                margin-bottom: 7px;
-                border-radius: 8px;
-                font-size: 14px;
-            }
-
-                .sidebar a:hover,
-                .sidebar a.active {
-                    background: #26734a;
-                    color: white;
-                }
-
-            .sidebar-signout {
-                display: block;
-                width: 100%;
-                text-align: left;
-                color: #e4f0e8;
-                background: transparent;
-                border: none;
-                padding: 13px 12px;
-                margin-bottom: 7px;
-                border-radius: 8px;
-                font-size: 14px;
-                font-family: inherit;
-                cursor: pointer;
-            }
-
-                .sidebar-signout:hover {
-                    background: #26734a;
-                    color: white;
-                }
 
             .main {
-                flex: 1;
+                padding: 20px;
+            }
+        }
+
+        @@media (max-width: 600px) {
+            .layout {
+                display: block;
+            }
+
+            .sidebar {
+                width: 100%;
                 min-width: 0;
-                padding: 30px;
             }
 
-            .topbar {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 15px;
-                margin-bottom: 25px;
+            .main {
+                padding: 16px;
             }
 
-                .topbar h1 {
-                    margin: 0;
-                    font-size: 28px;
-                    color: #173d29;
-                }
-
-                .topbar p {
-                    color: #718076;
-                    margin: 8px 0 0;
-                    font-size: 14px;
-                }
-
-            .admin-label {
-                background: white;
-                border: 1px solid #dce8df;
-                border-radius: 20px;
-                padding: 10px 16px;
-                color: #23663f;
-                font-size: 13px;
-            }
-
-            .data-grid {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 22px;
+            .topbar h1 {
+                font-size: 23px;
             }
 
             .data-card {
-                background: white;
-                border: 1px solid #e1e9e3;
-                border-radius: 12px;
-                padding: 20px;
-                box-shadow: 0 3px 12px rgba(20, 60, 35, 0.04);
-                min-width: 0;
-            }
-
-            .card-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 10px;
-                margin-bottom: 18px;
-            }
-
-                .card-header h2 {
-                    margin: 0;
-                    font-size: 18px;
-                    color: #204b31;
-                }
-
-            .count {
-                background: #e4f5e9;
-                color: #267343;
-                padding: 5px 10px;
-                border-radius: 20px;
-                font-size: 12px;
+                padding: 15px;
             }
 
             .add-form {
-                display: flex;
-                gap: 8px;
-                margin-bottom: 18px;
+                flex-direction: column;
             }
-
-                .add-form input {
-                    flex: 1;
-                    width: 100%;
-                    min-width: 0;
-                    padding: 11px;
-                    border: 1px solid #d5e1d8;
-                    border-radius: 7px;
-                    outline: none;
-                    font-size: 13px;
-                }
-
-                    .add-form input:focus {
-                        border-color: #2c8750;
-                    }
 
             .add-btn {
-                background: #218348;
-                color: white;
-                border: none;
-                border-radius: 7px;
-                padding: 10px 15px;
-                cursor: pointer;
-                font-weight: bold;
-            }
-
-                .add-btn:hover {
-                    background: #176b38;
-                }
-
-            .table-wrapper {
                 width: 100%;
-                overflow-x: auto;
             }
-
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 13px;
-            }
-
-            thead {
-                background: #f0f7f2;
-            }
-
-            th {
-                text-align: left;
-                color: #496653;
-                font-size: 11px;
-                letter-spacing: 0.4px;
-                padding: 12px 8px;
-                white-space: nowrap;
-            }
-
-            td {
-                padding: 12px 8px;
-                border-bottom: 1px solid #edf1ee;
-                color: #34483a;
-                vertical-align: middle;
-            }
-
-            tbody tr:hover {
-                background: #fbfdfb;
-            }
-
-            .number {
-                color: #287344;
-                font-weight: bold;
-                white-space: nowrap;
-            }
-
-            .delete-form {
-                margin: 0;
-            }
-
-            .delete-btn {
-                background: #fff0f0;
-                color: #c0392b;
-                border: 1px solid #f4d2d0;
-                border-radius: 6px;
-                padding: 6px 9px;
-                cursor: pointer;
-                font-size: 14px;
-            }
-
-                .delete-btn:hover {
-                    background: #ffdddd;
-                }
-
-            .empty {
-                text-align: center;
-                color: #8a968d;
-                padding: 20px;
-            }
-
-            .footer {
-                text-align: center;
-                color: #849187;
-                font-size: 12px;
-                margin-top: 28px;
-            }
-
-            .error-message {
-                background: #fff0f0;
-                color: #b91c1c;
-                padding: 10px 14px;
-                border-radius: 7px;
-                margin-bottom: 18px;
-            }
-
-            @@media (max-width: 900px) {
-                .data-grid {
-                    grid-template-columns: 1fr;
-                }
-
-                .sidebar {
-                    width: 200px;
-                    min-width: 200px;
-                }
-
-                .main {
-                    padding: 20px;
-                }
-            }
-
-            @@media (max-width: 600px) {
-                .layout {
-                    display: block;
-                }
-
-                .sidebar {
-                    width: 100%;
-                    min-width: 0;
-                }
-
-                .main {
-                    padding: 16px;
-                }
-
-                .topbar h1 {
-                    font-size: 23px;
-                }
-
-                .data-card {
-                    padding: 15px;
-                }
-
-                .add-form {
-                    flex-direction: column;
-                }
-
-                .add-btn {
-                    width: 100%;
-                }
-            }
+        }
     </style>
 </head>
 
 <body>
     <div class="layout">
 
+        <!-- SIDEBAR -->
         <aside class="sidebar">
             <div class="logo">System<span>Admin</span></div>
             <div class="subtitle">Control Panel</div>
@@ -367,6 +385,7 @@
             </form>
         </aside>
 
+        <!-- MAIN CONTENT -->
         <main class="main">
 
             <div class="topbar">
@@ -430,7 +449,9 @@
                                 }
                                 else
                                 {
-                                    <tr><td colspan="3" class="empty">No financial years found.</td></tr>
+                                    <tr>
+                                        <td colspan="3" class="empty">No financial years found.</td>
+                                    </tr>
                                 }
                             </tbody>
                         </table>
@@ -482,7 +503,9 @@
                                 }
                                 else
                                 {
-                                    <tr><td colspan="3" class="empty">No filing months found.</td></tr>
+                                    <tr>
+                                        <td colspan="3" class="empty">No filing months found.</td>
+                                    </tr>
                                 }
                             </tbody>
                         </table>
@@ -535,7 +558,9 @@
                                 }
                                 else
                                 {
-                                    <tr><td colspan="3" class="empty">No GST tax rates found.</td></tr>
+                                    <tr>
+                                        <td colspan="3" class="empty">No GST tax rates found.</td>
+                                    </tr>
                                 }
                             </tbody>
                         </table>
@@ -587,7 +612,9 @@
                                 }
                                 else
                                 {
-                                    <tr><td colspan="3" class="empty">No classifications found.</td></tr>
+                                    <tr>
+                                        <td colspan="3" class="empty">No classifications found.</td>
+                                    </tr>
                                 }
                             </tbody>
                         </table>

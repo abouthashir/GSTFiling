@@ -64,6 +64,9 @@ namespace GSTFiling.Controllers
 
             await _context.SaveChangesAsync();
 
+            TempData["Success"] =
+                "Centre status updated successfully.";
+
             return RedirectToAction(nameof(Centres));
         }
 
@@ -75,11 +78,10 @@ namespace GSTFiling.Controllers
         }
 
         // 5. Register Centre - POST
-        // Creates both Centre and Centre login account.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegisterCentre(
-            Centre centre, string password)
+            Centre centre, string? password)
         {
             if (string.IsNullOrWhiteSpace(centre.Name))
             {
@@ -102,16 +104,19 @@ namespace GSTFiling.Controllers
             if (!ModelState.IsValid)
                 return View(centre);
 
+            var centreName = centre.Name!.Trim();
             var email = centre.Email!.Trim();
 
             bool emailExists = await _context.Users
-                .AnyAsync(u => u.Email != null &&
+                .AnyAsync(u =>
+                    u.Email != null &&
                     u.Email.ToLower() == email.ToLower());
 
             if (emailExists)
             {
                 ModelState.AddModelError(
-                    "Email", "This email is already registered.");
+                    "Email",
+                    "This email is already registered.");
 
                 return View(centre);
             }
@@ -121,17 +126,17 @@ namespace GSTFiling.Controllers
 
             try
             {
+                centre.Name = centreName;
+                centre.Email = email;
                 centre.IsActive = true;
                 centre.UpdatedAt = DateTime.Now;
 
-                // Save Centre first to generate its Id.
                 _context.Centres.Add(centre);
                 await _context.SaveChangesAsync();
 
-                // Create the login account for this Centre.
                 var user = new User
                 {
-                    UserName = centre.Name.Trim(),
+                    UserName = centreName,
                     Email = email,
                     RoleId = CentreRoleId,
                     CentreId = centre.Id,
@@ -141,15 +146,14 @@ namespace GSTFiling.Controllers
                 };
 
                 user.Password = _passwordHasher.HashPassword(
-                    user, password);
+                    user, password!);
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
-                // Link Centre.UserId to the new User.Id.
                 centre.UserId = user.Id;
-                await _context.SaveChangesAsync();
 
+                await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 TempData["Success"] =
@@ -162,7 +166,8 @@ namespace GSTFiling.Controllers
                 await transaction.RollbackAsync();
 
                 ModelState.AddModelError(
-                    "", "Registration failed. Please check the details.");
+                    "",
+                    "Registration failed. Please check the details.");
 
                 return View(centre);
             }
@@ -346,7 +351,7 @@ namespace GSTFiling.Controllers
             return RedirectToAction(nameof(MasterData));
         }
 
-        // 15. View Centre
+        // 15. View Centre Details, Shops and Consultants
         [HttpGet]
         public async Task<IActionResult> ViewCentre(int id)
         {
@@ -355,6 +360,27 @@ namespace GSTFiling.Controllers
 
             if (centre == null)
                 return NotFound();
+
+            // Shops/customers registered under this centre
+            var shops = await _context.Customers
+                .Where(c => c.CentreId == id)
+                .OrderBy(c => c.ShopName)
+                .ToListAsync();
+
+            // Consultants assigned to this centre
+            var consultants = await _context.Consultants
+                .Where(c => c.CentreId == id)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
+            ViewBag.Shops = shops;
+            ViewBag.Consultants = consultants;
+            ViewBag.TotalShops = shops.Count;
+            ViewBag.TotalConsultants = consultants.Count;
+            ViewBag.ActiveConsultants =
+                consultants.Count(c => c.IsActive);
+            ViewBag.InactiveConsultants =
+                consultants.Count(c => !c.IsActive);
 
             return View(centre);
         }
@@ -455,6 +481,9 @@ namespace GSTFiling.Controllers
             {
                 _context.Centres.Remove(centre);
                 await _context.SaveChangesAsync();
+
+                TempData["Success"] =
+                    "Centre deleted successfully.";
             }
 
             return RedirectToAction(nameof(Centres));
