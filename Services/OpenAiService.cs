@@ -73,7 +73,7 @@ IMPORTANT RULES:
         {
             if (string.IsNullOrEmpty(_apiKey) || _apiKey == "YOUR_OPENAI_API_KEY_HERE")
             {
-                return "{\"error\": \"OpenAI API Key is not configured. Please add it to appsettings.json.\"}";
+                return "{\"error\": \"OpenAI API Key is not configured. Please add it to User Secrets.\"}";
             }
 
             fileExtension = fileExtension.ToLowerInvariant();

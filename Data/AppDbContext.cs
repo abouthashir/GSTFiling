@@ -29,40 +29,6 @@ namespace GSTFiling.Data
 
         public DbSet<User> Users { get; set; }
 
-        public DbSet<Invoices> Invoices { get; set; }
-
         public DbSet<Invoice> Invoice { get; set; }
-
-        // Master data
-        public DbSet<Year> Years { get; set; }
-
-        public DbSet<Month> Months { get; set; }
-
-        public DbSet<InvoiceType> InvoiceTypes { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            // Define primary keys for master data models
-            modelBuilder.Entity<Year>()
-                .HasKey(y => y.yid);
-
-            modelBuilder.Entity<Month>()
-                .HasKey(m => m.mid);
-
-            modelBuilder.Entity<InvoiceType>()
-                .HasKey(t => t.ctypid);
-
-            // Map to existing database tables
-            modelBuilder.Entity<Year>()
-                .ToTable("tbl_year");
-
-            modelBuilder.Entity<Month>()
-                .ToTable("tbl_month");
-
-            modelBuilder.Entity<InvoiceType>()
-                .ToTable("tbl_ctype");
-        }
     }
 }
