@@ -1,7 +1,6 @@
 ﻿using GSTFiling.Data;
 using GSTFiling.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 
@@ -10,14 +9,12 @@ namespace GSTFiling.Controllers
     public class AdminController : Controller
     {
         private readonly AppDbContext _context;
-        private readonly PasswordHasher<User> _passwordHasher;
 
         private const int CentreRoleId = 2;
 
         public AdminController(AppDbContext context)
         {
             _context = context;
-            _passwordHasher = new PasswordHasher<User>();
         }
 
         // 1. Dashboard
@@ -145,8 +142,7 @@ namespace GSTFiling.Controllers
                         CultureInfo.InvariantCulture)
                 };
 
-                user.Password = _passwordHasher.HashPassword(
-                    user, password!);
+                user.Password = password;
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
@@ -456,9 +452,7 @@ namespace GSTFiling.Controllers
             if (linkedUser != null &&
                 !string.IsNullOrWhiteSpace(NewPassword))
             {
-                linkedUser.Password =
-                    _passwordHasher.HashPassword(
-                        linkedUser, NewPassword);
+                linkedUser.Password = NewPassword;
             }
 
             await _context.SaveChangesAsync();

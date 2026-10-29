@@ -3,7 +3,6 @@ using GSTFiling.Data;
 using GSTFiling.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,12 +11,10 @@ namespace GSTFiling.Controllers
     public class AuthController : Controller
     {
         private readonly AppDbContext _context;
-        private readonly PasswordHasher<User> _passwordHasher;
 
         public AuthController(AppDbContext context)
         {
             _context = context;
-            _passwordHasher = new PasswordHasher<User>();
         }
 
         // LOGIN PAGE
@@ -58,56 +55,11 @@ namespace GSTFiling.Controllers
                 .FirstOrDefaultAsync(u =>
                     u.Email != null &&
                     u.Email.ToLower() == email);
-
-            if (user == null)
+            if (user == null || user.Password != password)
                 return LoginFailed();
 
             if (user.IsActive == false)
                 return AccountInactive();
-
-            // Support existing plain-text passwords
-            // and passwords stored as ASP.NET Identity hashes.
-            bool passwordIsValid = false;
-            bool isLegacyPlainText = false;
-
-            if (user.Password == password)
-            {
-                passwordIsValid = true;
-                isLegacyPlainText = true;
-            }
-            else if (!string.IsNullOrWhiteSpace(user.Password))
-            {
-                try
-                {
-                    var result = _passwordHasher.VerifyHashedPassword(
-                        user,
-                        user.Password,
-                        password);
-
-                    passwordIsValid =
-                        result != PasswordVerificationResult.Failed;
-                }
-                catch (FormatException)
-                {
-                    passwordIsValid = false;
-                }
-                catch (ArgumentException)
-                {
-                    passwordIsValid = false;
-                }
-            }
-
-            if (!passwordIsValid)
-                return LoginFailed();
-
-            // Upgrade old plain-text passwords to a hash after login.
-            if (isLegacyPlainText)
-            {
-                user.Password = _passwordHasher.HashPassword(
-                    user, password);
-
-                await _context.SaveChangesAsync();
-            }
 
             var roleName = await _context.Roles
                 .Where(r => r.Id == user.RoleId)
