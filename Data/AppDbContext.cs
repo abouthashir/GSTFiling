@@ -41,6 +41,9 @@ namespace GSTFiling.Data
             InvoiceClassifications
         { get; set; }
 
+        // Shop invoices
+        public DbSet<Invoice> Invoice { get; set; }
+
         // Configure decimal precision
         protected override void OnModelCreating(
             ModelBuilder modelBuilder)

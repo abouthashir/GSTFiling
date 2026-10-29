@@ -1,0 +1,125 @@
+﻿@model GSTFiling.Models.Customer
+
+@{
+    ViewData["Title"] = "Shop Dashboard";
+    var filings = ViewBag.GstFilings as List<GSTFiling.Models.GstFiling> ?? new List<GSTFiling.Models.GstFiling>();
+}
+
+<div class="container-fluid py-4" style="background-color: #f4fbf7; min-height: 85vh;">
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+        <h3 class="fw-bold text-success">GSTIntel</h3>
+        <a asp-controller="Shop" asp-action="Dashboard" asp-route-id="@Model.Id" class="btn btn-outline-success px-4">Home</a>
+    </div>
+
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 mb-3">
+            <div class="card text-white p-4 shadow-sm border-0 rounded-4 text-center" style="background-color: #0d5c31 !important;">
+                <div class="d-flex justify-content-center mb-3">
+                    <div class="bg-white rounded-circle d-flex align-items-center justify-content-center text-success fw-bold fs-3" style="width: 80px; height: 80px;">
+                        @(Model?.ShopName != null && Model.ShopName.Length > 0 ? Model.ShopName.Substring(0, 1).ToUpper() : "S")
+                    </div>
+                </div>
+                <h4 class="fw-bold mb-1">@(Model?.ShopName ?? "Shop Portal")</h4>
+                <p class="text-light small mb-4">Owner: @(Model?.Name ?? "N/A")</p>
+
+                <div class="bg-white text-dark rounded-3 py-2 px-3 fw-bold text-start shadow-sm">
+                    <span class="text-success">■</span> Dashboard
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="card border-0 shadow-sm p-4 rounded-4 bg-white">
+                <h4 class="fw-bold text-success mb-1">ADD INVOICES FOR THE CUSTOMER</h4>
+                <p class="text-muted small mb-4">(@(Model?.ShopName ?? "Shop") – @(Model?.GstNumber ?? "GSTIN"))</p>
+
+                <!-- Filter Form -->
+                <form method="get" asp-action="Dashboard" asp-route-id="@Model?.Id" class="row g-3 mb-4 align-items-center">
+                    <div class="col-md-3">
+                        <select name="year" class="form-select border-success">
+                            <option value="">Select Year</option>
+                            <option value="2026" selected="@(ViewBag.SelectedYear?.ToString() == "2026")">2026</option>
+                            <option value="2025" selected="@(ViewBag.SelectedYear?.ToString() == "2025")">2025</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="month" class="form-select">
+                            <option value="">--Select Month--</option>
+                            @foreach (var m in new[] { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" })
+                            {
+                                <option value="@m" selected="@(ViewBag.SelectedMonth?.ToString() == m)">@m</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="type" class="form-select">
+                            <option value="">--Select Type--</option>
+                            <option value="B2B Sales" selected="@(ViewBag.SelectedType?.ToString() == "B2B Sales")">B2B Sales</option>
+                            <option value="B2C" selected="@(ViewBag.SelectedType?.ToString() == "B2C")">B2C</option>
+                            <option value="Debit Note Sales" selected="@(ViewBag.SelectedType?.ToString() == "Debit Note Sales")">Debit Note Sales</option>
+                            <option value="Credit Note Sales" selected="@(ViewBag.SelectedType?.ToString() == "Credit Note Sales")">Credit Note Sales</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-success w-100">+ Filter</button>
+                    </div>
+                </form>
+
+                <div class="mb-4">
+                    <a href="@Url.Action("Invoices", "Shop", new { cmid = Model?.Id, typeId = 2 })" class="btn btn-success px-4">+ Add Invoices</a>
+                </div>
+
+                <!-- Table -->
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="text-uppercase small text-muted border-bottom">
+                            <tr>
+                                <th>Month</th>
+                                <th>Year</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>GST Details</th>
+                                <th class="text-end">List/Add Invoices</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (filings.Any())
+                            {
+                                @foreach (var inv in filings)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">@(inv.UpdatedAt.HasValue ? inv.UpdatedAt.Value.ToString("MMMM") : "N/A")</td>
+                                        <td>@(inv.UpdatedAt.HasValue ? inv.UpdatedAt.Value.ToString("yyyy") : "N/A")</td>
+                                        <td>General</td>
+                                        <td>
+                                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">
+                                                @(inv.Status == 1 ? "Filed" : "Pending")
+                                            </span>
+                                        </td>
+                                        <td>@(string.IsNullOrEmpty(inv.Message) ? "-" : inv.Message)</td>
+                                        <td class="text-end">
+                                            <a asp-action="Invoices" asp-route-cmid="@Model.Id" asp-route-typeId="2" class="btn btn-outline-success btn-sm rounded-pill px-3">List/Add Invoices</a>
+                                            <form asp-action="DeleteFiling" asp-route-id="@inv.InvoiceMonthId" asp-route-cmid="@Model.Id" method="post" class="d-inline ms-1" onsubmit="return confirm('Delete this record?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle">🗑️</button>
+                                            </form>
+                                        </td>
+                                        
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">No records found. Select Year, Month and Type, then click Add Invoices.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

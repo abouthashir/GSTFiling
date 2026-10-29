@@ -337,6 +337,58 @@ namespace GSTFiling.Migrations
                     b.ToTable("GstTaxRates");
                 });
 
+            modelBuilder.Entity("GSTFiling.Models.Invoice", b =>
+                {
+                    b.Property<int>("invid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("invid"));
+
+                    b.Property<string>("billamtstr")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("cess")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("cgst")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("cstmrid")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("gst_amt")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("invdate")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("invmonth")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("invno")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("invyear")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("sgst")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("taxable_amt")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("taxrate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("type")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("invid");
+
+                    b.ToTable("Invoice");
+                });
+
             modelBuilder.Entity("GSTFiling.Models.InvoiceClassification", b =>
                 {
                     b.Property<int>("Id")
