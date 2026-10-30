@@ -101,6 +101,10 @@ else
                             </td>
                             <td class="text-end">
                                 <div class="d-inline-flex gap-2">
+                                    <a class="btn btn-sm btn-outline-secondary" asp-action="ShopInvoices" asp-route-id="@shop.Id"
+                                       aria-label="View invoices of @shop.ShopName">
+                                        <i class="bi bi-receipt" aria-hidden="true"></i> Invoices
+                                    </a>
                                     <a class="btn btn-sm btn-outline-success" asp-action="EditShop" asp-route-id="@shop.Id"
                                        aria-label="Edit @shop.ShopName">
                                         <i class="bi bi-pencil" aria-hidden="true"></i> Edit

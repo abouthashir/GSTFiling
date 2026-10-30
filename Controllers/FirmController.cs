@@ -542,6 +542,75 @@ namespace GSTFiling.Controllers
             return RedirectToAction(nameof(Shops));
         }
 
+        // View-only list of one shop's invoices. The Centre cannot add, edit or delete them.
+        public async Task<IActionResult> ShopInvoices(int id, int? year, string? month)
+        {
+            int centreId = GetCurrentCentreId();
+
+            // The shop must belong to MY centre
+            var shop = await _db.Customers
+                .FirstOrDefaultAsync(s => s.Id == id && s.CentreId == centreId);
+
+            if (shop == null)
+            {
+                return NotFound();
+            }
+
+            // Only accept a real month name from the URL
+            if (month != null && !ShopInvoicesPageViewModel.MonthNames.Contains(month))
+            {
+                month = null;
+            }
+
+            // This shop's invoices; the filters are added below
+            var query = _db.Invoice.Where(i => i.cstmrid == shop.Id);
+
+            if (year != null)
+            {
+                query = query.Where(i => i.invyear == year);
+            }
+
+            if (month != null)
+            {
+                query = query.Where(i => i.invmonth == month);
+            }
+
+            var model = new ShopInvoicesPageViewModel
+            {
+                ShopId = shop.Id,
+                ShopName = shop.ShopName ?? "Shop",
+                OwnerName = shop.Name,
+                GstNumber = shop.GstNumber,
+                Year = year,
+                Month = month,
+
+                YearOptions = await _db.Invoice
+                    .Where(i => i.cstmrid == shop.Id)
+                    .Select(i => i.invyear)
+                    .Distinct()
+                    .OrderByDescending(y => y)
+                    .ToListAsync(),
+
+                Invoices = await query
+                    .OrderByDescending(i => i.invid)
+                    .Select(i => new ShopInvoiceRowViewModel
+                    {
+                        Id = i.invid,
+                        InvoiceNumber = i.invno,
+                        InvoiceDate = i.invdate,
+                        TaxRate = i.taxrate,
+                        TaxableAmount = i.taxable_amt,
+                        Cgst = i.cgst,
+                        Sgst = i.sgst,
+                        Cess = i.cess,
+                        GstAmount = i.gst_amt
+                    })
+                    .ToListAsync()
+            };
+
+            return View(model);
+        }
+
         // ---------- Helpers ----------
 
         private async Task<bool> EmailIsTakenAsync(string email, int? exceptUserId = null)
