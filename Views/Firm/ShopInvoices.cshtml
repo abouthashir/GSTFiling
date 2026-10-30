@@ -1,0 +1,137 @@
+﻿@model ShopInvoicesPageViewModel
+@{
+    ViewData["Title"] = "Invoices - " + Model.ShopName;
+    bool isFiltered = Model.Year != null || Model.Month != null;
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+    <div>
+        <a class="small text-decoration-none" asp-action="Shops">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i> Back to shops
+        </a>
+        <h1 class="h3 fw-bold text-success mt-1 mb-1">@Model.ShopName</h1>
+        <p class="text-muted mb-0">Owner: @(Model.OwnerName ?? "-") &middot; GST: @(Model.GstNumber ?? "-")</p>
+    </div>
+    <span class="badge text-bg-secondary">
+        <i class="bi bi-eye" aria-hidden="true"></i> View only
+    </span>
+</div>
+
+<form method="get" asp-action="ShopInvoices" asp-route-id="@Model.ShopId" class="card shadow-sm mb-3">
+    <div class="card-body d-flex flex-wrap align-items-end gap-2">
+        <div>
+            <label for="year" class="form-label small mb-1">Year</label>
+            <select id="year" name="year" class="form-select">
+                <option value="">All years</option>
+                @foreach (var y in Model.YearOptions)
+                {
+                    <option value="@y" selected="@(y == Model.Year)">@y</option>
+                }
+            </select>
+        </div>
+        <div>
+            <label for="month" class="form-label small mb-1">Month</label>
+            <select id="month" name="month" class="form-select">
+                <option value="">All months</option>
+                @foreach (var m in ShopInvoicesPageViewModel.MonthNames)
+                {
+                    <option value="@m" selected="@(m == Model.Month)">@m</option>
+                }
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-funnel" aria-hidden="true"></i> Show
+        </button>
+        @if (isFiltered)
+        {
+            <a class="btn btn-outline-secondary" asp-action="ShopInvoices" asp-route-id="@Model.ShopId">Clear</a>
+        }
+    </div>
+</form>
+
+<div class="row g-3 mb-3">
+    <div class="col-12 col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="small text-muted">Taxable amount</div>
+                <div class="h5 fw-bold mb-0">&#8377; @Model.TotalTaxable.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="small text-muted">GST (CGST + SGST + Cess)</div>
+                <div class="h5 fw-bold mb-0">&#8377; @Model.TotalGst.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="small text-muted">Total bill amount</div>
+                <div class="h5 fw-bold text-success mb-0">&#8377; @Model.GrandTotal.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Invoices.Count == 0)
+{
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-receipt display-4 text-muted" aria-hidden="true"></i>
+            <p class="mt-3 mb-0">
+                @(isFiltered ? "No invoices for this period." : "This shop has not added any invoices yet.")
+            </p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption class="px-3">@Model.Invoices.Count invoice(s). Only the shop can add or delete invoices.</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Invoice no.</th>
+                        <th scope="col">Date</th>
+                        <th scope="col" class="text-end">Rate</th>
+                        <th scope="col" class="text-end">Taxable</th>
+                        <th scope="col" class="text-end">CGST</th>
+                        <th scope="col" class="text-end">SGST</th>
+                        <th scope="col" class="text-end">Cess</th>
+                        <th scope="col" class="text-end">GST</th>
+                        <th scope="col" class="text-end">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var inv in Model.Invoices)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@(inv.InvoiceNumber ?? "-")</td>
+                            <td>@inv.InvoiceDate</td>
+                            <td class="text-end">@(inv.TaxRate.ToString("0.##"))%</td>
+                            <td class="text-end">@inv.TaxableAmount.ToString("N2")</td>
+                            <td class="text-end">@inv.Cgst.ToString("N2")</td>
+                            <td class="text-end">@inv.Sgst.ToString("N2")</td>
+                            <td class="text-end">@inv.Cess.ToString("N2")</td>
+                            <td class="text-end">@inv.GstAmount.ToString("N2")</td>
+                            <td class="text-end fw-semibold">@inv.TotalAmount.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-light fw-bold">
+                    <tr>
+                        <th scope="row" colspan="3">Total</th>
+                        <td class="text-end">@Model.TotalTaxable.ToString("N2")</td>
+                        <td colspan="3"></td>
+                        <td class="text-end">@Model.TotalGst.ToString("N2")</td>
+                        <td class="text-end">@Model.GrandTotal.ToString("N2")</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+}
